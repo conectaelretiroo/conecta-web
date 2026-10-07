@@ -44,6 +44,15 @@ export function sesionGuardada(): Sesion | null {
   }
 }
 
+/** Guarda la sesión en esta pestaña. Solo se llama cuando el script ya confirmó el acceso. */
+export function guardarSesion(sesion: Sesion) {
+  try {
+    sessionStorage.setItem(CLAVE, JSON.stringify(sesion));
+  } catch {
+    // sin almacenamiento: la sesión dura mientras la página esté abierta
+  }
+}
+
 export function cerrarSesion() {
   try {
     sessionStorage.removeItem(CLAVE);
@@ -71,20 +80,14 @@ function cargarGoogle() {
   return cargando;
 }
 
-/** Dibuja el botón oficial de Google dentro de `elemento` y avisa cuando la persona ingresa. */
+/** Dibuja el botón oficial de Google dentro de `elemento` y entrega el token cuando la persona elige su cuenta. */
 export async function mostrarBotonGoogle(elemento: HTMLElement, alIngresar: (sesion: Sesion) => void) {
   const google = await cargarGoogle();
   google.accounts.id.initialize({
     client_id: CLIENT_ID!,
     callback: ({ credential }) => {
       const sesion = leerToken(credential);
-      if (!sesion) return;
-      try {
-        sessionStorage.setItem(CLAVE, JSON.stringify(sesion));
-      } catch {
-        // sin almacenamiento: la sesión dura mientras la página esté abierta
-      }
-      alIngresar(sesion);
+      if (sesion) alIngresar(sesion);
     },
   });
   google.accounts.id.renderButton(elemento, { theme: "outline", size: "large", text: "signin_with", shape: "rectangular", locale: "es", width: 280 });
