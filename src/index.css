@@ -222,3 +222,31 @@ th { color: var(--muted); background: var(--soft); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
 }
+
+/* PQRS conectadas a Google Sheets */
+.button:disabled { opacity: 0.6; cursor: progress; }
+.field select { width: 100%; padding: 0.75rem; color: var(--ink); background: var(--white); border: 0.0625rem solid #999a90; border-radius: var(--radius-s); }
+.trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.form-error, .form-notice { margin: 0; padding: 0.75rem 1rem; border-radius: var(--radius-s); font-size: 0.875rem; }
+.form-error { color: #8f1d1d; background: #fdeeee; border: 0.0625rem solid #f2c4c4; }
+.form-notice { color: var(--teal); background: var(--teal-soft); border: 0.0625rem solid color-mix(in srgb, var(--teal) 25%, var(--border)); }
+.admin-actions + .form-notice, .admin-actions ~ .form-error { margin-bottom: 1.5rem; }
+.admin-session { display: grid; justify-items: end; gap: 0.5rem; color: var(--muted); }
+.google-button { min-height: 2.75rem; }
+.row-link { cursor: pointer; }
+.row-link:hover td { background: var(--soft); }
+.link-button { padding: 0; color: var(--teal); background: none; border: 0; cursor: pointer; }
+.state--cerrada { color: var(--secondary); }
+.back-button { margin-bottom: 1.5rem; padding-inline: 0; }
+.detail-data { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem; margin: 0; }
+.detail-data dt { color: var(--muted); font-size: 0.75rem; }
+.detail-data dd { margin: 0.25rem 0 0; overflow-wrap: anywhere; }
+.detail-text { white-space: pre-wrap; color: var(--secondary); }
+.history { margin: 1rem 0 0; padding: 0; list-style: none; display: grid; gap: 1rem; }
+.history li { padding-left: 1rem; border-left: 0.125rem solid var(--border); font-size: 0.875rem; }
+.history small { display: block; color: var(--muted); }
+.history p { margin: 0.25rem 0 0; white-space: pre-wrap; }
+@media (max-width: 40rem) {
+  .admin-session { justify-items: start; }
+  .detail-data { grid-template-columns: 1fr; }
+}
