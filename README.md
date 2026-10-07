@@ -23,4 +23,12 @@ npm run build   # genera dist/
 - `src/data/canal.ts`: contacto, razón social, NIT y enlace del en vivo.
 - `src/data/programas.ts`: programas del carrusel y de la página Programas.
 - `src/data/parrilla.ts`: programación.
-- `src/services/pqrs.ts`: por ahora simulado; se conectará a Google Sheets + Apps Script.
+- `src/services/pqrs.ts` y `src/services/sesion.ts`: conexión de las PQRS y del ingreso con Google.
+
+## PQRS
+
+Las PQRS se guardan en una hoja de Google del canal a través de un Apps Script. La guía de instalación está en [`apps-script/README.md`](apps-script/README.md). La página necesita dos variables de entorno (ver `.env.example`); sin ellas funciona en modo demostración.
+
+## Actualizar el diseño desde Figma Make
+
+El diseño se edita en Figma Make y luego se trae a este repositorio. Al traerlo hay que conservar `src/services/`, `apps-script/` y las funciones `Pqrs`, `Admin` y `PqrsDetail` de `src/App.tsx`, que contienen la conexión real.
