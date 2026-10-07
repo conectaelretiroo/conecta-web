@@ -4,7 +4,7 @@ import { canal } from "./data/canal";
 import { dias, parrilla } from "./data/parrilla";
 import { programas } from "./data/programas";
 import { actualizarPQRS, ErrorPQRS, Estado, estados, EventoHistorial, listarPQRS, modoDemo, obtenerPQRS, radicarPQRS, Solicitud } from "./services/pqrs";
-import { cerrarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
+import { cerrarSesion, guardarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
 
 type IconName = "play" | "menu" | "close" | "arrow" | "clock" | "signal" | "copy" | "lock" | "search" | "check";
 
@@ -185,13 +185,14 @@ function GoogleButton({ onLogin }: { onLogin: (session: Sesion) => void }) {
 }
 
 function Admin() {
-  const [session, setSession] = useState<Sesion | null>(() => sesionGuardada());
+  const [session, setSession] = useState<Sesion | null>(null);
   const [items, setItems] = useState<Solicitud[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const [tab, setTab] = useState<"Todas" | "Abiertas" | "Cerradas">("Abiertas");
   const [selected, setSelected] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
   const exit = (message = "") => { cerrarSesion(); setSession(null); setItems([]); setSelected(null); setError(message); };
   const fail = (e: unknown) => { if (e instanceof ErrorPQRS && e.sesion) exit(e.message); else setError(e instanceof Error ? e.message : "Algo salió mal. Intenta de nuevo."); };
   const load = async () => {
@@ -200,9 +201,24 @@ function Admin() {
     setError("");
     try { setItems(await listarPQRS(session.token)); } catch (e) { fail(e); } finally { setLoading(false); }
   };
-  useEffect(() => { void load(); }, [session]);
+  // El panel solo se muestra cuando el script confirma que la cuenta está en la pestaña Equipo,
+  // también al volver con una sesión guardada (pudieron quitarle el acceso).
+  const login = async (next: Sesion) => {
+    setChecking(true);
+    setError("");
+    try {
+      const list = await listarPQRS(next.token);
+      guardarSesion(next);
+      setItems(list);
+      setSession(next);
+    } catch (e) {
+      cerrarSesion();
+      setError(e instanceof Error ? e.message : "No pudimos verificar tu acceso. Intenta de nuevo.");
+    } finally { setChecking(false); }
+  };
+  useEffect(() => { const saved = sesionGuardada(); if (saved) void login(saved); }, []);
 
-  if (!session) return <section className="admin-login"><div className="login-card"><span className="success-icon"><Icon name="lock" /></span><Eyebrow>Acceso restringido</Eyebrow><Text as="h1">Ingreso del equipo</Text><Text>Panel de gestión de PQRS. Solo para personal autorizado del canal.</Text>{error && <p className="form-error" role="alert">{error}</p>}{ingresoDemo ? <Button onClick={() => setSession({ token: "demo", correo: "demo@conecta", nombre: "Demostración", expira: Date.now() + 3_600_000 })}>Ingresar con Google (demostración)</Button> : <GoogleButton onLogin={(next) => { setError(""); setSession(next); }} />}</div></section>;
+  if (!session) return <section className="admin-login"><div className="login-card"><span className="success-icon"><Icon name="lock" /></span><Eyebrow>Acceso restringido</Eyebrow><Text as="h1">Ingreso del equipo</Text><Text>Panel de gestión de PQRS. Solo para personal autorizado del canal.</Text>{error && <p className="form-error" role="alert">{error}</p>}{checking ? <p className="form-notice" role="status">Verificando acceso…</p> : ingresoDemo ? <Button onClick={() => void login({ token: "demo", correo: "demo@conecta", nombre: "Demostración", expira: Date.now() + 3_600_000 })}>Ingresar con Google (demostración)</Button> : <GoogleButton onLogin={(next) => void login(next)} />}</div></section>;
 
   if (selected) return <PqrsDetail token={session.token} radicado={selected} onBack={() => { setSelected(null); void load(); }} onError={fail} />;
 
