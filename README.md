@@ -12,11 +12,10 @@ npm run dev     # servidor local
 npm run build   # genera dist/
 ```
 
-## Publicación (Cloudflare Pages)
+## Publicación (Cloudflare)
 
-- Comando de build: `npm run build`
-- Carpeta de salida: `dist`
-- `public/_redirects` envía todas las rutas a `index.html` (navegación de una sola página).
+- Cloudflare compila con `npm run build` y publica `dist` usando `wrangler.jsonc`.
+- `not_found_handling: "single-page-application"` hace que rutas como `/pqrs` o `/admin` carguen `index.html`.
 
 ## Datos editables
 
