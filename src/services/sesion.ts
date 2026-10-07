@@ -80,15 +80,23 @@ function cargarGoogle() {
   return cargando;
 }
 
+let alIngresarActual: ((sesion: Sesion) => void) | null = null;
+let inicializado = false;
+
 /** Dibuja el botón oficial de Google dentro de `elemento` y entrega el token cuando la persona elige su cuenta. */
 export async function mostrarBotonGoogle(elemento: HTMLElement, alIngresar: (sesion: Sesion) => void) {
   const google = await cargarGoogle();
-  google.accounts.id.initialize({
-    client_id: CLIENT_ID!,
-    callback: ({ credential }) => {
-      const sesion = leerToken(credential);
-      if (sesion) alIngresar(sesion);
-    },
-  });
+  alIngresarActual = alIngresar;
+  // Google pide inicializar una sola vez por página; el botón se puede volver a dibujar las veces que haga falta.
+  if (!inicializado) {
+    google.accounts.id.initialize({
+      client_id: CLIENT_ID!,
+      callback: ({ credential }) => {
+        const sesion = leerToken(credential);
+        if (sesion) alIngresarActual?.(sesion);
+      },
+    });
+    inicializado = true;
+  }
   google.accounts.id.renderButton(elemento, { theme: "outline", size: "large", text: "signin_with", shape: "rectangular", locale: "es", width: 280 });
 }
