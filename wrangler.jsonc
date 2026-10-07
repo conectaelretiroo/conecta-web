@@ -1,0 +1,10 @@
+// Despliegue en Cloudflare (Workers con archivos estáticos).
+{
+  "name": "conecta-web",
+  "compatibility_date": "2025-09-01",
+  "assets": {
+    "directory": "./dist",
+    // Cualquier ruta del sitio (/pqrs, /admin…) carga index.html y React decide qué mostrar.
+    "not_found_handling": "single-page-application"
+  }
+}
