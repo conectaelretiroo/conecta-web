@@ -35,7 +35,7 @@ Cuando cambies el código más adelante, usa **Implementar → Administrar imple
 
 ## 4. Conectar la página
 
-En Cloudflare Pages (o en un archivo `.env` local, ver `.env.example`) se configuran dos variables:
+Los valores de producción ya están en `.env.production` (no son secretos). Si cambian, se actualizan ahí:
 
 | Variable | Valor |
 | --- | --- |
