@@ -88,7 +88,18 @@ function ProgramVisual({ color, compact = false }: { color: string; compact?: bo
 
 function Home() {
   const [slide, setSlide] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
   const current = programas[slide];
+  const previousSlide = () => setSlide((value) => (value - 1 + programas.length) % programas.length);
+  const nextSlide = () => setSlide((value) => (value + 1) % programas.length);
+  const finishSwipe = (end: number) => {
+    if (touchStart === null) return;
+    const distance = touchStart - end;
+    if (Math.abs(distance) > 50) {
+      distance > 0 ? nextSlide() : previousSlide();
+    }
+    setTouchStart(null);
+  };
   const hoy = parrillaSemanal[diaDeHoy()];
   const proxima = proximaEmision();
   useEffect(() => {
@@ -104,13 +115,18 @@ function Home() {
           <div><div className="video-shell"><span className="live-badge"><i /> En vivo</span><Icon name="signal" /><Text>Señal en directo</Text></div>{proxima && <div className="now-row"><span>Próximo programa · {proxima.dia} {proxima.hora}</span><strong>{proxima.nombre}</strong></div>}</div>
         </div>
       </section>
-      <section className="section">
+      <section className="section program-showcase">
         <div className="container">
           <Eyebrow>Producción propia</Eyebrow><div className="section-heading"><Text as="h2">Nuestros programas</Text><span className="carousel-count">{slide + 1} / {programas.length}</span></div>
-          <div className="carousel-stage">
-            <Button variant="secondary" className="carousel-arrow carousel-arrow--previous" onClick={() => setSlide((slide - 1 + programas.length) % programas.length)}><span aria-hidden="true">←</span><span className="sr-only">Programa anterior</span></Button>
-            <article className="featured-program"><ProgramVisual color={current.color} /><div className="featured-copy"><Eyebrow>{current.categoria}</Eyebrow><Text as="h3">{current.nombre}</Text><Text>{current.descripcion}</Text><Text className="schedule"><Icon name="clock" /> {current.horario}</Text><AppLink href="/programacion" className="text-link">Ver en la programación <Icon name="arrow" /></AppLink></div></article>
-            <Button variant="secondary" className="carousel-arrow carousel-arrow--next" onClick={() => setSlide((slide + 1) % programas.length)}><span aria-hidden="true">→</span><span className="sr-only">Programa siguiente</span></Button>
+          <div
+            className="carousel-stage"
+            onTouchStart={(event) => setTouchStart(event.changedTouches[0].clientX)}
+            onTouchEnd={(event) => finishSwipe(event.changedTouches[0].clientX)}
+            onTouchCancel={() => setTouchStart(null)}
+          >
+            <Button variant="secondary" className="carousel-arrow carousel-arrow--previous" onClick={previousSlide}><span aria-hidden="true">←</span><span className="sr-only">Programa anterior</span></Button>
+            <article className="featured-program" key={current.nombre}><ProgramVisual color={current.color} /><div className="featured-copy"><Eyebrow>{current.categoria}</Eyebrow><Text as="h3">{current.nombre}</Text><Text>{current.descripcion}</Text><Text className="schedule"><Icon name="clock" /> {current.horario}</Text><AppLink href="/programacion" className="text-link">Ver en la programación <Icon name="arrow" /></AppLink></div></article>
+            <Button variant="secondary" className="carousel-arrow carousel-arrow--next" onClick={nextSlide}><span aria-hidden="true">→</span><span className="sr-only">Programa siguiente</span></Button>
           </div>
           <div className="progress-bars">{programas.map((p, index) => <button key={p.nombre} className={index === slide ? "active" : ""} onClick={() => setSlide(index)} aria-label={`Ver ${p.nombre}`} />)}</div>
         </div>
@@ -129,15 +145,15 @@ function Live() {
 function Programming() {
   const [day, setDay] = useState(diaDeHoy);
   const emisiones = parrillaSemanal[day];
-  return <><PageIntro eyebrow="Parrilla semanal" title="Programación">Horarios en hora de Colombia de los programas propios del canal.</PageIntro><section className="section"><div className="container"><div className="tabs" role="tablist">{dias.map((item) => <button role="tab" aria-selected={item === day} className={item === day ? "active" : ""} onClick={() => setDay(item)} key={item}>{item}</button>)}</div>{emisiones.length ? <div className="schedule-grid">{emisiones.map((item) => <article className={`schedule-card${item.enVivo ? " is-live" : ""}`} key={item.nombre}>{item.enVivo && <span className="live-badge"><i /> En vivo</span>}<Text className="time">{item.hora}</Text><Text as="h3">{item.nombre}</Text><Text>{item.descripcion}</Text></article>)}</div> : <Text>No hay programas propios este día.</Text>}</div></section></>;
+  return <><PageIntro eyebrow="Parrilla semanal" title="Programación" tone="cyan">Horarios en hora de Colombia de los programas propios del canal.</PageIntro><section className="section"><div className="container"><div className="tabs" role="tablist">{dias.map((item) => <button role="tab" aria-selected={item === day} className={item === day ? "active" : ""} onClick={() => setDay(item)} key={item}>{item}</button>)}</div>{emisiones.length ? <div className="schedule-grid">{emisiones.map((item) => <article className={`schedule-card${item.enVivo ? " is-live" : ""}`} key={item.nombre}>{item.enVivo && <span className="live-badge"><i /> En vivo</span>}<Text className="time">{item.hora}</Text><Text as="h3">{item.nombre}</Text><Text>{item.descripcion}</Text></article>)}</div> : <Text>No hay programas propios este día.</Text>}</div></section></>;
 }
 
 function Programs() {
-  return <><PageIntro eyebrow="Producción propia" title="Programas">Historias, información y conversaciones hechas desde El Retiro.</PageIntro><section className="section"><div className="container program-grid">{programas.map((program) => <article className="program-card" key={program.nombre}><ProgramVisual color={program.color} compact /><div><Eyebrow>{program.categoria}</Eyebrow><Text as="h2">{program.nombre}</Text><Text>{program.descripcion}</Text><Text className="schedule"><Icon name="clock" /> {program.horario}</Text></div></article>)}</div></section></>;
+  return <><PageIntro eyebrow="Producción propia" title="Programas" tone="orange">Historias, información y conversaciones hechas desde El Retiro.</PageIntro><section className="section"><div className="container program-grid">{programas.map((program) => <article className="program-card" key={program.nombre}><ProgramVisual color={program.color} compact /><div><Eyebrow>{program.categoria}</Eyebrow><Text as="h2">{program.nombre}</Text><Text>{program.descripcion}</Text><Text className="schedule"><Icon name="clock" /> {program.horario}</Text></div></article>)}</div></section></>;
 }
 
-function PageIntro({ eyebrow, title, children }: { eyebrow: string; title: string; children: ReactNode }) {
-  return <section className="page-intro"><div className="container narrow"><Eyebrow>{eyebrow}</Eyebrow><Text as="h1">{title}</Text><Text className="lead">{children}</Text></div></section>;
+function PageIntro({ eyebrow, title, tone = "teal", children }: { eyebrow: string; title: string; tone?: "teal" | "cyan" | "orange" | "green"; children: ReactNode }) {
+  return <section className={`page-intro page-intro--${tone}`}><div className="container narrow"><Eyebrow>{eyebrow}</Eyebrow><Text as="h1">{title}</Text><Text className="lead">{children}</Text></div></section>;
 }
 
 function Field({ label, name, type = "text", required = false, help, maxLength }: { label: string; name: string; type?: string; required?: boolean; help?: string; maxLength?: number }) {
@@ -168,7 +184,7 @@ function Pqrs() {
       setSending(false);
     }
   };
-  if (sent) return <><PageIntro eyebrow="Atención al ciudadano" title="Solicitud radicada">Guarda este número de radicado para cualquier comunicación con el canal.</PageIntro><section className="section"><div className="container confirmation"><span className="success-icon"><Icon name="check" /></span><Text as="h2">Recibimos tu solicitud</Text><div className="ticket">{sent}<Button variant="ghost" onClick={() => navigator.clipboard?.writeText(sent)}><Icon name="copy" /> Copiar</Button></div><Text>Te enviamos una confirmación a tu correo y por ese medio recibirás la respuesta.</Text><Button onClick={() => setSent("")}>Radicar otra solicitud</Button></div></section></>;
+  if (sent) return <><PageIntro eyebrow="Atención al ciudadano" title="Solicitud radicada" tone="green">Guarda este número de radicado para cualquier comunicación con el canal.</PageIntro><section className="section"><div className="container confirmation"><span className="success-icon"><Icon name="check" /></span><Text as="h2">Recibimos tu solicitud</Text><div className="ticket">{sent}<Button variant="ghost" onClick={() => navigator.clipboard?.writeText(sent)}><Icon name="copy" /> Copiar</Button></div><Text>Te enviamos una confirmación a tu correo y por ese medio recibirás la respuesta.</Text><Button onClick={() => setSent("")}>Radicar otra solicitud</Button></div></section></>;
   return <><PageIntro eyebrow="Atención al ciudadano" title="Peticiones, quejas, reclamos y sugerencias">Radica tu solicitud y recibe un número de radicado.</PageIntro><section className="section"><div className="container form-layout"><form className="form-card" onSubmit={submit}><Text as="h2">Radicar solicitud</Text>{modoDemo && <p className="form-notice">Formulario en modo de prueba: las solicitudes todavía no se guardan.</p>}<fieldset><legend>Tipo de solicitud</legend><div className="chips">{["Petición", "Queja", "Reclamo", "Sugerencia", "Felicitación"].map((item) => <button type="button" aria-pressed={type === item} className={type === item ? "active" : ""} onClick={() => setType(item)} key={item}>{item}</button>)}</div></fieldset><div className="field-grid"><Field label="Nombre completo" name="nombre" required maxLength={120} /><Field label="Correo electrónico" name="correo" type="email" required maxLength={254} help="Aquí te enviaremos la respuesta." /><Field label="Teléfono (opcional)" name="telefono" type="tel" maxLength={30} /><Field label="Barrio o vereda" name="ubicacion" required maxLength={120} /></div><Field label="Asunto" name="asunto" required maxLength={150} /><label className="field"><span>Descripción *</span><textarea name="descripcion" required maxLength={4800} value={description} onChange={(e) => setDescription(e.target.value)} /><small>{description.length} de 4.800 caracteres</small></label><label className="trap" aria-hidden="true">Sitio web<input name="sitio" tabIndex={-1} autoComplete="off" /></label><label className="checkbox"><input type="checkbox" name="autorizacion" required /><span>Autorizo el tratamiento de mis datos personales según la <AppLink href="/politica-de-datos">política de tratamiento de datos</AppLink>.</span></label>{error && <p className="form-error" role="alert">{error}</p>}<Button type="submit" disabled={sending}>{sending ? "Enviando…" : "Enviar solicitud"}</Button></form><aside className="help-column"><article><Text as="h3">¿Qué tipo de solicitud elegir?</Text><Text><strong>Petición:</strong> solicita información o una gestión.</Text><Text><strong>Queja:</strong> expresa inconformidad con la atención.</Text><Text><strong>Reclamo:</strong> pide corregir una situación.</Text><Text><strong>Sugerencia:</strong> propone una mejora.</Text></article><article><Text as="h3">Otros canales de atención</Text><Text>{canal.direccion}</Text><Text>{canal.telefono}</Text><Text>{canal.correo}</Text></article></aside></div></section></>;
 }
 
@@ -268,7 +284,7 @@ function PqrsDetail({ token, radicado, onBack, onError }: { token: string; radic
 }
 
 function Policy() {
-  return <><PageIntro eyebrow="Documento legal" title="Política de tratamiento de datos">Información sobre el uso responsable de los datos personales.</PageIntro><article className="section legal container"><Text as="h2">1. Responsable del tratamiento</Text><Text>{canal.razonSocial}, identificada con NIT {canal.nit}, con domicilio en [Dirección] y correo [Correo], es responsable del tratamiento de datos personales.</Text><Text as="h2">2. Finalidades</Text><Text>Los datos se utilizan para gestionar solicitudes ciudadanas, responder comunicaciones y cumplir las obligaciones legales aplicables.</Text><Text as="h2">3. Derechos de los titulares</Text><Text>Conocer, actualizar, rectificar y solicitar la supresión de sus datos; presentar consultas o reclamos y revocar la autorización cuando proceda.</Text><Text as="h2">4. Consultas y reclamos</Text><Text>Las solicitudes relacionadas con datos personales se reciben en [Correo] o en [Dirección], conforme a la Ley 1581 de 2012.</Text></article></>;
+  return <><PageIntro eyebrow="Documento legal" title="Política de tratamiento de datos" tone="green">Información sobre el uso responsable de los datos personales.</PageIntro><article className="section legal container"><Text as="h2">1. Responsable del tratamiento</Text><Text>{canal.razonSocial}, identificada con NIT {canal.nit}, con domicilio en [Dirección] y correo [Correo], es responsable del tratamiento de datos personales.</Text><Text as="h2">2. Finalidades</Text><Text>Los datos se utilizan para gestionar solicitudes ciudadanas, responder comunicaciones y cumplir las obligaciones legales aplicables.</Text><Text as="h2">3. Derechos de los titulares</Text><Text>Conocer, actualizar, rectificar y solicitar la supresión de sus datos; presentar consultas o reclamos y revocar la autorización cuando proceda.</Text><Text as="h2">4. Consultas y reclamos</Text><Text>Las solicitudes relacionadas con datos personales se reciben en [Correo] o en [Dirección], conforme a la Ley 1581 de 2012.</Text></article></>;
 }
 
 function NotFound() {
