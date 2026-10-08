@@ -1,7 +1,7 @@
 import { FormEvent, ReactNode, useEffect, useRef, useState } from "react";
 import Logo from "./components/Logo";
 import { canal } from "./data/canal";
-import { dias, parrilla } from "./data/parrilla";
+import { diaDeHoy, dias, fechaDeHoy, parrillaSemanal, proximaEmision } from "./data/parrilla";
 import { programas } from "./data/programas";
 import { actualizarPQRS, ErrorPQRS, Estado, estados, EventoHistorial, listarPQRS, modoDemo, obtenerPQRS, radicarPQRS, Solicitud } from "./services/pqrs";
 import { cerrarSesion, guardarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
@@ -89,6 +89,8 @@ function ProgramVisual({ color, compact = false }: { color: string; compact?: bo
 function Home() {
   const [slide, setSlide] = useState(0);
   const current = programas[slide];
+  const hoy = parrillaSemanal[diaDeHoy()];
+  const proxima = proximaEmision();
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setInterval(() => setSlide((value) => (value + 1) % programas.length), 7000);
@@ -99,7 +101,7 @@ function Home() {
       <section className="hero" data-theme="dark">
         <div className="container hero-grid">
           <div><Eyebrow>Canal local · El Retiro, Antioquia</Eyebrow><Text as="h1" className="display">La señal de nuestro pueblo, en vivo</Text><Text className="lead">Información, cultura y conversación para reconocer lo que somos y mantenernos conectados.</Text><div className="button-row"><AppLink href="/en-vivo" className="button button--primary"><Icon name="play" /> Ver en vivo</AppLink><AppLink href="/programacion" className="button button--secondary">Programación</AppLink></div></div>
-          <div><div className="video-shell"><span className="live-badge"><i /> En vivo</span><Icon name="signal" /><Text>Señal en directo</Text></div><div className="now-row"><span>Ahora · 7:00 p. m. – 8:00 p. m.</span><strong>Conecta Noticias</strong></div></div>
+          <div><div className="video-shell"><span className="live-badge"><i /> En vivo</span><Icon name="signal" /><Text>Señal en directo</Text></div>{proxima && <div className="now-row"><span>Próximo programa · {proxima.dia} {proxima.hora}</span><strong>{proxima.nombre}</strong></div>}</div>
         </div>
       </section>
       <section className="section">
@@ -113,19 +115,21 @@ function Home() {
           <div className="progress-bars">{programas.map((p, index) => <button key={p.nombre} className={index === slide ? "active" : ""} onClick={() => setSlide(index)} aria-label={`Ver ${p.nombre}`} />)}</div>
         </div>
       </section>
-      <section className="section section--soft"><div className="container"><div className="section-heading"><div><Eyebrow>Martes 18 de marzo</Eyebrow><Text as="h2">Programación de hoy</Text></div><AppLink href="/programacion" className="text-link">Ver programación completa <Icon name="arrow" /></AppLink></div><div className="schedule-grid">{parrilla.slice(0, 3).map((item) => <article className={`schedule-card${item.enVivo ? " is-live" : ""}`} key={item.nombre}>{item.enVivo && <span className="live-badge"><i /> En vivo</span>}<Text className="time">{item.hora}</Text><Text as="h3">{item.nombre}</Text><Text>{item.descripcion}</Text></article>)}</div></div></section>
+      <section className="section section--soft"><div className="container"><div className="section-heading"><div><Eyebrow>{fechaDeHoy()}</Eyebrow><Text as="h2">Programación de hoy</Text></div><AppLink href="/programacion" className="text-link">Ver programación completa <Icon name="arrow" /></AppLink></div>{hoy.length ? <div className="schedule-grid">{hoy.slice(0, 3).map((item) => <article className={`schedule-card${item.enVivo ? " is-live" : ""}`} key={item.nombre}>{item.enVivo && <span className="live-badge"><i /> En vivo</span>}<Text className="time">{item.hora}</Text><Text as="h3">{item.nombre}</Text><Text>{item.descripcion}</Text></article>)}</div> : <Text>Hoy no hay programas propios al aire. Consulta la programación de la semana.</Text>}</div></section>
       <section className="cta"><div className="container cta-inner"><div><Eyebrow>Atención al ciudadano</Eyebrow><Text as="h2">¿Tienes una petición, queja o sugerencia?</Text><Text>Cuéntanos cómo podemos ayudarte o mejorar nuestro servicio a la comunidad.</Text></div><AppLink href="/pqrs" className="button button--primary">Radicar PQRS <Icon name="arrow" /></AppLink></div></section>
     </>
   );
 }
 
 function Live() {
-  return <section className="section live-page" data-theme="dark"><div className="container"><div className="section-heading"><div><Eyebrow>Señal digital</Eyebrow><Text as="h1">En vivo</Text></div><span className="status"><i /> Transmitiendo ahora</span></div><div className="video-shell video-shell--large"><span className="live-badge"><i /> En vivo</span><Icon name="play" /><Text>Conecta Telecomunicaciones</Text></div><div className="live-info"><article><Eyebrow>Ahora · 7:00 p. m.</Eyebrow><Text as="h3">Conecta Noticias</Text><Text>La actualidad de El Retiro y el Oriente antioqueño.</Text></article><article><Eyebrow>A continuación · 8:00 p. m.</Eyebrow><Text as="h3">Voces del Retiro</Text><Text>Conversaciones con los protagonistas de nuestra comunidad.</Text></article></div><AppLink href="/programacion" className="button button--secondary">Ver programación de la semana</AppLink></div></section>;
+  const proxima = proximaEmision();
+  return <section className="section live-page" data-theme="dark"><div className="container"><div className="section-heading"><div><Eyebrow>Señal digital</Eyebrow><Text as="h1">En vivo</Text></div><span className="status"><i /> Transmitiendo ahora</span></div><div className="video-shell video-shell--large"><span className="live-badge"><i /> En vivo</span><Icon name="play" /><Text>Conecta Telecomunicaciones</Text></div>{proxima && <div className="live-info"><article><Eyebrow>Próximo programa · {proxima.dia} {proxima.hora}</Eyebrow><Text as="h3">{proxima.nombre}</Text><Text>{proxima.descripcion}</Text></article></div>}<AppLink href="/programacion" className="button button--secondary">Ver programación de la semana</AppLink></div></section>;
 }
 
 function Programming() {
-  const [day, setDay] = useState("Martes");
-  return <><PageIntro eyebrow="Parrilla semanal" title="Programación">Horarios en hora de Colombia. El programa que está al aire se marca con la etiqueta «En vivo».</PageIntro><section className="section"><div className="container"><div className="tabs" role="tablist">{dias.map((item) => <button role="tab" aria-selected={item === day} className={item === day ? "active" : ""} onClick={() => setDay(item)} key={item}>{item}</button>)}</div><div className="schedule-grid">{parrilla.map((item) => <article className={`schedule-card${item.enVivo ? " is-live" : ""}`} key={item.nombre}>{item.enVivo && <span className="live-badge"><i /> En vivo</span>}<Text className="time">{item.hora}</Text><Text as="h3">{item.nombre}</Text><Text>{item.descripcion}</Text></article>)}</div></div></section></>;
+  const [day, setDay] = useState(diaDeHoy);
+  const emisiones = parrillaSemanal[day];
+  return <><PageIntro eyebrow="Parrilla semanal" title="Programación">Horarios en hora de Colombia de los programas propios del canal.</PageIntro><section className="section"><div className="container"><div className="tabs" role="tablist">{dias.map((item) => <button role="tab" aria-selected={item === day} className={item === day ? "active" : ""} onClick={() => setDay(item)} key={item}>{item}</button>)}</div>{emisiones.length ? <div className="schedule-grid">{emisiones.map((item) => <article className={`schedule-card${item.enVivo ? " is-live" : ""}`} key={item.nombre}>{item.enVivo && <span className="live-badge"><i /> En vivo</span>}<Text className="time">{item.hora}</Text><Text as="h3">{item.nombre}</Text><Text>{item.descripcion}</Text></article>)}</div> : <Text>No hay programas propios este día.</Text>}</div></section></>;
 }
 
 function Programs() {
