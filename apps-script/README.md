@@ -13,7 +13,7 @@ Al final necesitas dos datos para la página: la **URL del script** (termina en 
 5. Guarda (ícono de disquete). Arriba, en la lista de funciones, elige **configurar** y toca **Ejecutar**.
 6. Google pide permisos. Elige la cuenta del canal. Si aparece "Google no verificó esta app", toca **Configuración avanzada → Ir a … (no seguro)** y luego **Permitir**. Es normal: el script es del mismo canal.
 7. Vuelve a la hoja: ya tiene las pestañas **PQRS**, **Historial** y **Equipo**.
-8. En **Equipo** escribe, desde la fila 2, el correo de cada persona que gestionará las PQRS (columna A) y su nombre (columna B). Deben ser cuentas de Google.
+8. En **Equipo** escribe, desde la fila 2, el correo de cada persona que gestionará las PQRS (columna A) y su nombre (columna B). Deben ser cuentas de Google. Cada una recibe un aviso por correo con cada PQRS nueva; para que alguien entre al panel sin recibir avisos, escribe `no` en la columna C (**Avisos**).
 
 ## 2. Publicar el script
 
