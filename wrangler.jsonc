@@ -4,6 +4,12 @@
   "compatibility_date": "2025-09-01",
   // Compila antes de publicar, aunque Cloudflare no tenga configurado un comando de compilación.
   "build": { "command": "npm run build" },
+  // Dominio propio del canal. La dirección workers.dev sigue funcionando.
+  "workers_dev": true,
+  "routes": [
+    { "pattern": "conectaelretiro.tv", "custom_domain": true },
+    { "pattern": "www.conectaelretiro.tv", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./dist",
     // Cualquier ruta del sitio (/pqrs, /admin…) carga index.html y React decide qué mostrar.
