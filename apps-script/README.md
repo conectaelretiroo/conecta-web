@@ -28,10 +28,10 @@ Cuando cambies el código más adelante, usa **Implementar → Administrar imple
 
 1. Entra a [Google Cloud Console](https://console.cloud.google.com) con la cuenta del canal y crea un proyecto llamado `Conecta Web`. Es gratis y no pide tarjeta.
 2. Ve a **APIs y servicios → Pantalla de consentimiento de OAuth** (puede aparecer como **Google Auth Platform**). Tipo de usuario **Externo**, nombre de la app `Conecta Telecomunicaciones` y el correo del canal como soporte.
-3. En **Información de la marca** llena la página principal (`https://conecta-web.conectaelretiroo.workers.dev`), la política de privacidad (`…/politica-de-datos`) y agrega `conectaelretiroo.workers.dev` en **Dominios autorizados**. No subas logo.
+3. En **Información de la marca** llena la página principal (`https://conecta-web.conectaelretiroo.workers.dev`), la política de privacidad (`…/politica-de-datos`) y agrega `conectaelretiro.tv` y `conectaelretiroo.workers.dev` en **Dominios autorizados**. No subas logo.
 4. En **Público** toca **Publicar app** (estado **En producción**). Puede aparecer un aviso de verificación: como la app solo pide nombre y correo, el ingreso funciona sin enviarla a revisión. Así cualquier persona elige su cuenta de Google y el acceso lo decide solo la pestaña Equipo.
 5. Ve a **Clientes → Crear cliente**, tipo **Aplicación web**.
-6. En **Orígenes autorizados de JavaScript** agrega la dirección de la página (`https://conecta-web.conectaelretiroo.workers.dev` y el dominio propio cuando exista) y `http://localhost:5173` para pruebas.
+6. En **Orígenes autorizados de JavaScript** agrega la dirección de la página (`https://conectaelretiro.tv`, `https://www.conectaelretiro.tv` y `https://conecta-web.conectaelretiroo.workers.dev`) y `http://localhost:5173` para pruebas.
 7. Copia el **ID de cliente** (termina en `.apps.googleusercontent.com`).
 8. De vuelta en Apps Script: **Configuración del proyecto → Propiedades del script → Agregar propiedad**. Nombre `GOOGLE_CLIENT_ID`, valor: el ID de cliente. Guarda.
 
