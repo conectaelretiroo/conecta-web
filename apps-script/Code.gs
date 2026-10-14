@@ -31,7 +31,7 @@ function configurar() {
   const libro = SpreadsheetApp.getActive();
   crearHoja_(libro, HOJA_PQRS, COLUMNAS);
   crearHoja_(libro, HOJA_HISTORIAL, ['Fecha', 'Radicado', 'Acción', 'Detalle', 'Responsable']);
-  crearHoja_(libro, HOJA_EQUIPO, ['Correo', 'Nombre']);
+  crearHoja_(libro, HOJA_EQUIPO, ['Correo', 'Nombre', 'Avisos']);
   const estado = libro.getSheetByName(HOJA_PQRS).getRange(2, COL['Estado'] + 1, 1000, 1);
   estado.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(ESTADOS, true).build());
 }
@@ -156,7 +156,7 @@ function radicar_(s) {
     NOMBRE_REMITENTE,
   ].join('\n'));
 
-  const equipo = correosEquipo_();
+  const equipo = correosEquipo_(true);
   if (equipo.length) {
     correo_(equipo.join(','), 'Nueva PQRS ' + radicado + ': ' + solicitud.asunto, [
       'Tipo: ' + solicitud.tipo,
@@ -313,10 +313,12 @@ function historial_(radicado, accion, detalle, responsable) {
   hoja_(HOJA_HISTORIAL).appendRow([new Date(), radicado, accion, seguro_(detalle), responsable]);
 }
 
-function correosEquipo_() {
+/** Correos de la pestaña Equipo. Con soloAvisos, omite a quien tenga "no" en la columna Avisos. */
+function correosEquipo_(soloAvisos) {
   const hoja = hoja_(HOJA_EQUIPO);
   if (hoja.getLastRow() < 2) return [];
-  return hoja.getRange(2, 1, hoja.getLastRow() - 1, 1).getValues()
+  return hoja.getRange(2, 1, hoja.getLastRow() - 1, 3).getValues()
+    .filter((f) => !soloAvisos || String(f[2]).trim().toLowerCase() !== 'no')
     .map((f) => String(f[0]).trim().toLowerCase())
     .filter((c) => c.indexOf('@') > 0);
 }
