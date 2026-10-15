@@ -24,6 +24,8 @@ const TIPOS = ['Petición', 'Queja', 'Reclamo', 'Sugerencia', 'Felicitación'];
 const ESTADOS = ['Radicada', 'En trámite', 'Respondida', 'Cerrada'];
 const LIMITE_POR_HORA = 5;
 const NOMBRE_REMITENTE = 'Conecta Telecomunicaciones';
+// Si el ciudadano responde un correo del canal, su respuesta llega por esta dirección.
+const RESPONDER_A = 'pqrs@conectaelretiro.tv';
 const ZONA = 'America/Bogota';
 
 /** Ejecutar una sola vez desde el editor: crea las pestañas con sus encabezados. */
@@ -332,7 +334,7 @@ function filasEquipo_() {
 
 function correo_(para, asunto, cuerpo) {
   try {
-    MailApp.sendEmail({ to: para, subject: asunto, body: cuerpo, name: NOMBRE_REMITENTE });
+    MailApp.sendEmail({ to: para, subject: asunto, body: cuerpo, name: NOMBRE_REMITENTE, replyTo: RESPONDER_A });
   } catch (error) {
     // Un correo fallido no debe perder la PQRS, que ya quedó en la hoja.
     console.error('No se pudo enviar el correo a ' + para + ': ' + error);
