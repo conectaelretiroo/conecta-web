@@ -83,6 +83,10 @@ function doPost(e) {
       case 'envivo-guardar':
         resultado = { envivo: guardarEnVivo_(verificar_(datos.token), datos.enlace) };
         break;
+      case 'envivo-quitar':
+        verificar_(datos.token);
+        resultado = { envivo: quitarEnVivo_() };
+        break;
       default:
         throw new ErrorPublico('Acción no válida.');
     }
@@ -363,6 +367,13 @@ function guardarEnVivo_(usuario, enlace) {
   }));
   CacheService.getScriptCache().remove('envivo');
   return { video: video, titulo: info.titulo };
+}
+
+/** El equipo termina la transmisión desde el panel antes de que YouTube la cierre. */
+function quitarEnVivo_() {
+  PropertiesService.getScriptProperties().deleteProperty(PROPIEDAD_ENVIVO);
+  CacheService.getScriptCache().remove('envivo');
+  return null;
 }
 
 /** Acepta youtube.com/watch?v=, youtube.com/live/, youtu.be/ y el código de 11 caracteres. */

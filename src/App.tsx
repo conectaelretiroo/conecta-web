@@ -5,7 +5,7 @@ import { diaDeHoy, dias, fechaDeHoy, parrillaSemanal, proximaEmision } from "./d
 import { programas } from "./data/programas";
 import { actualizarPQRS, ErrorPQRS, Estado, estados, EventoHistorial, listarPQRS, modoDemo, obtenerPQRS, radicarPQRS, Solicitud } from "./services/pqrs";
 import { cerrarSesion, guardarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
-import { activarEnVivo, EnVivo, enlaceEmbebido, useEnVivo } from "./services/envivo";
+import { activarEnVivo, EnVivo, enlaceEmbebido, terminarEnVivo, useEnVivo } from "./services/envivo";
 import { mostrarTurnstile, turnstileActivo } from "./services/turnstile";
 
 type IconName = "play" | "menu" | "close" | "arrow" | "clock" | "signal" | "copy" | "lock" | "search" | "check";
@@ -44,7 +44,7 @@ function AppLink({ href, className = "", children, onClick }: { href: string; cl
   return <a href={href} className={className} onClick={navigate}>{children}</a>;
 }
 
-function Button({ children, variant = "primary", type = "button", onClick, className = "", disabled = false }: { children: ReactNode; variant?: "primary" | "secondary" | "ghost"; type?: "button" | "submit"; onClick?: () => void; className?: string; disabled?: boolean }) {
+function Button({ children, variant = "primary", type = "button", onClick, className = "", disabled = false }: { children: ReactNode; variant?: "primary" | "secondary" | "ghost" | "danger"; type?: "button" | "submit"; onClick?: () => void; className?: string; disabled?: boolean }) {
   return <button type={type} onClick={onClick} disabled={disabled} className={`button button--${variant} ${className}`}>{children}</button>;
 }
 
@@ -238,6 +238,8 @@ function Admin() {
   const [tab, setTab] = useState<"Todas" | "Abiertas" | "Cerradas">("Abiertas");
   const [selected, setSelected] = useState<string | null>(null);
   const [checking, setChecking] = useState(false);
+  const [area, setArea] = useState<"pqrs" | "envivo">("pqrs");
+  const envivo = useEnVivo();
   const exit = (message = "") => { cerrarSesion(); setSession(null); setItems([]); setSelected(null); setError(message); };
   const fail = (e: unknown) => { if (e instanceof ErrorPQRS && e.sesion) exit(e.message); else setError(e instanceof Error ? e.message : "Algo salió mal. Intenta de nuevo."); };
   const load = async () => {
@@ -270,28 +272,54 @@ function Admin() {
   const text = query.trim().toLowerCase();
   const visible = items.filter((item) => (tab === "Todas" || (tab === "Abiertas") === isOpen(item)) && (!text || [item.radicado, item.asunto, item.nombre, item.correo].some((field) => field.toLowerCase().includes(text))));
   const open = items.filter(isOpen).length;
-  return <><PageIntro eyebrow="Panel" title="Gestión de PQRS">Revisa y gestiona las solicitudes de la ciudadanía.</PageIntro><section className="section"><div className="container"><div className="admin-actions"><div className="summary"><article><span>Recibidas</span><strong>{items.length}</strong></article><article><span>Abiertas</span><strong>{open}</strong></article><article><span>Respondidas</span><strong>{items.length - open}</strong></article></div><div className="admin-session"><small>{session.correo}</small><div><Button variant="secondary" onClick={load}>Actualizar</Button> <Button variant="ghost" onClick={() => exit()}>Cerrar sesión</Button></div></div></div><LivePanel token={session.token} onError={fail} />{modoDemo && <p className="form-notice">Modo demostración: estos son datos de ejemplo.</p>}{error && <p className="form-error" role="alert">{error}</p>}<div className="tabs" role="tablist">{(["Abiertas", "Cerradas", "Todas"] as const).map((item) => <button role="tab" aria-selected={item === tab} className={item === tab ? "active" : ""} onClick={() => setTab(item)} key={item}>{item}</button>)}</div><label className="search"><Icon name="search" /><input placeholder="Buscar por radicado, asunto o ciudadano" value={query} onChange={(e) => setQuery(e.target.value)} /></label>{loading ? <Text>Cargando solicitudes…</Text> : visible.length === 0 ? <Text>No hay solicitudes para mostrar.</Text> : <div className="table-wrap"><table><thead><tr><th>Radicado</th><th>Tipo</th><th>Asunto y ciudadano</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>{visible.map((item) => <tr key={item.radicado} className="row-link" onClick={() => setSelected(item.radicado)}><td><button className="link-button" onClick={() => setSelected(item.radicado)}><code>{item.radicado}</code></button></td><td>{item.tipo}</td><td><strong>{item.asunto}</strong><small>{item.nombre} · {item.correo}</small></td><td>{formatDate(item.fecha)}</td><td><span className={`state state--${item.estado.replace(" ", "-").toLowerCase()}`}>{item.estado}</span></td></tr>)}</tbody></table></div>}</div></section></>;
+  const areas = { pqrs: ["Gestión de PQRS", "Revisa y gestiona las solicitudes de la ciudadanía."], envivo: ["Transmisión en vivo", "Muestra en la página un en vivo de YouTube y termínalo cuando quieras."] } as const;
+  return <><PageIntro eyebrow="Panel del equipo" title={areas[area][0]}>{areas[area][1]}</PageIntro><section className="section"><div className="container">
+    <div className="admin-bar"><div className="admin-nav" role="tablist"><button role="tab" aria-selected={area === "pqrs"} className={area === "pqrs" ? "active" : ""} onClick={() => setArea("pqrs")}>PQRS {open > 0 && <span className="admin-count">{open}</span>}</button><button role="tab" aria-selected={area === "envivo"} className={area === "envivo" ? "active" : ""} onClick={() => setArea("envivo")}>Transmisión en vivo {envivo && <span className="admin-live"><i /> Al aire</span>}</button></div><div className="admin-session"><small>{session.correo}</small><Button variant="ghost" onClick={() => exit()}>Cerrar sesión</Button></div></div>
+    {modoDemo && <p className="form-notice">Modo demostración: estos son datos de ejemplo.</p>}{error && <p className="form-error" role="alert">{error}</p>}
+    {area === "envivo" ? <LivePanel token={session.token} onError={fail} /> : <>
+      <div className="admin-actions"><div className="summary"><article><span>Recibidas</span><strong>{items.length}</strong></article><article><span>Abiertas</span><strong>{open}</strong></article><article><span>Respondidas</span><strong>{items.length - open}</strong></article></div><Button variant="secondary" onClick={load}>Actualizar</Button></div>
+      <div className="tabs" role="tablist">{(["Abiertas", "Cerradas", "Todas"] as const).map((item) => <button role="tab" aria-selected={item === tab} className={item === tab ? "active" : ""} onClick={() => setTab(item)} key={item}>{item}</button>)}</div><label className="search"><Icon name="search" /><input placeholder="Buscar por radicado, asunto o ciudadano" value={query} onChange={(e) => setQuery(e.target.value)} /></label>{loading ? <Text>Cargando solicitudes…</Text> : visible.length === 0 ? <Text>No hay solicitudes para mostrar.</Text> : <div className="table-wrap"><table><thead><tr><th>Radicado</th><th>Tipo</th><th>Asunto y ciudadano</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>{visible.map((item) => <tr key={item.radicado} className="row-link" onClick={() => setSelected(item.radicado)}><td><button className="link-button" onClick={() => setSelected(item.radicado)}><code>{item.radicado}</code></button></td><td>{item.tipo}</td><td><strong>{item.asunto}</strong><small>{item.nombre} · {item.correo}</small></td><td>{formatDate(item.fecha)}</td><td><span className={`state state--${item.estado.replace(" ", "-").toLowerCase()}`}>{item.estado}</span></td></tr>)}</tbody></table></div>}
+    </>}
+  </div></section></>;
 }
 
 function LivePanel({ token, onError }: { token: string; onError: (e: unknown) => void }) {
   const envivo = useEnVivo();
   const [link, setLink] = useState("");
   const [saving, setSaving] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [notice, setNotice] = useState("");
-  const save = async (event: FormEvent) => {
-    event.preventDefault();
+  const run = async (action: () => Promise<string>) => {
     setSaving(true);
     setNotice("");
-    try {
+    try { setNotice(await action()); } catch (e) {
+      setNotice(e instanceof Error ? e.message : "No se pudo guardar.");
+      onError(e);
+    } finally { setSaving(false); setConfirming(false); }
+  };
+  const save = (event: FormEvent) => {
+    event.preventDefault();
+    void run(async () => {
       const activo = await activarEnVivo(token, link.trim());
       setLink("");
-      setNotice(activo ? `Listo: "${activo.titulo}" ya aparece en la página.` : "Guardado.");
-    } catch (e) {
-      setNotice(e instanceof Error ? e.message : "No se pudo activar.");
-      onError(e);
-    } finally { setSaving(false); }
+      return activo ? `Listo: "${activo.titulo}" ya aparece en la página.` : "Guardado.";
+    });
   };
-  return <form className="form-card live-panel" onSubmit={save}><div><Text as="h2">Transmisión en vivo</Text><Text>{envivo ? <>Al aire: <strong>{envivo.titulo}</strong></> : "No hay transmisión activa."} Se quita sola cuando termina el en vivo en YouTube.</Text></div><label className="field"><span>{envivo ? "Cambiar por otro en vivo" : "Enlace del en vivo de YouTube"}</span><input type="url" required value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://youtube.com/live/…" /></label>{notice && <p className="form-notice" role="status">{notice}</p>}<Button type="submit" disabled={saving}>{saving ? "Activando…" : envivo ? "Cambiar" : "Activar"}</Button></form>;
+  const stop = () => void run(async () => { await terminarEnVivo(token); return "Transmisión terminada. La página ya no la muestra."; });
+  return <div className="form-layout live-admin">
+    <div className="form-card">
+      <div className="live-admin-heading"><Text as="h2">Estado</Text>{envivo ? <span className="status"><i /> Al aire</span> : <span className="state state--cerrada">Sin transmisión</span>}</div>
+      {envivo ? <><LiveVideo envivo={envivo} /><Text><strong>{envivo.titulo}</strong></Text>
+        {confirming ? <div className="confirm-box" role="alert"><Text>¿Terminar la transmisión? La página dejará de mostrar el video, los botones "Ver en vivo" y la opción "En vivo" del menú.</Text><div className="button-row"><Button variant="danger" onClick={stop} disabled={saving}>{saving ? "Terminando…" : "Sí, terminar"}</Button><Button variant="ghost" onClick={() => setConfirming(false)} disabled={saving}>Cancelar</Button></div></div>
+          : <Button variant="danger" className="live-stop" onClick={() => setConfirming(true)} disabled={saving}>Terminar transmisión</Button>}</>
+        : <div className="video-shell live-empty"><Icon name="signal" /><Text>No hay transmisión activa</Text></div>}
+      {notice && <p className="form-notice" role="status">{notice}</p>}
+    </div>
+    <aside className="help-column">
+      <form className="form-card" onSubmit={save}><Text as="h2">{envivo ? "Cambiar por otro en vivo" : "Activar un en vivo"}</Text><label className="field"><span>Enlace de YouTube</span><input type="url" required value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://youtube.com/live/…" /><small>Sirve el enlace del en vivo al aire o programado.</small></label><Button type="submit" disabled={saving}>{saving ? "Guardando…" : envivo ? "Cambiar" : "Activar"}</Button></form>
+      <article><Text as="h3">Cómo funciona</Text><Text>Al activarlo, Inicio muestra el video y aparecen los botones "Ver en vivo" y la opción "En vivo" del menú.</Text><Text>Cuando el en vivo termina en YouTube, todo se quita solo en uno o dos minutos. También puedes terminarlo aquí.</Text></article>
+    </aside>
+  </div>;
 }
 
 function PqrsDetail({ token, radicado, onBack, onError }: { token: string; radicado: string; onBack: () => void; onError: (e: unknown) => void }) {

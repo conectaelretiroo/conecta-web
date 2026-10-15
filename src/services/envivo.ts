@@ -69,3 +69,9 @@ export async function activarEnVivo(token: string, enlace: string) {
   poner(envivo);
   return envivo;
 }
+
+/** Solo el equipo: deja de mostrar la transmisión en la página. */
+export async function terminarEnVivo(token: string) {
+  if (!modoDemo) await llamar("envivo-quitar", { token });
+  poner(null);
+}

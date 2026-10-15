@@ -71,7 +71,7 @@ Una vez al mes, desde la hoja: **Archivo → Descargar → Microsoft Excel**, o 
 
 ## Transmisión en vivo (YouTube)
 
-El equipo pega el enlace de un en vivo de YouTube en el panel (**Transmisión en vivo → Activar**). Mientras YouTube lo marque al aire o programado, la página muestra el bloque principal de Inicio con el video, los botones "Ver en vivo" y la opción "En vivo" del menú. Cuando el en vivo termina, todo se oculta solo (la página pregunta cada minuto).
+El equipo pega el enlace de un en vivo de YouTube en el panel (**Transmisión en vivo → Activar**). Mientras YouTube lo marque al aire o programado, la página muestra el bloque principal de Inicio con el video, los botones "Ver en vivo" y la opción "En vivo" del menú. Cuando el en vivo termina, todo se oculta solo (la página pregunta cada minuto). También se puede cortar antes con **Terminar transmisión** en el panel.
 
 Para que el script pueda consultar YouTube hace falta una llave gratuita:
 
