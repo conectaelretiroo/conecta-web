@@ -5,6 +5,7 @@ import { diaDeHoy, dias, fechaDeHoy, parrillaSemanal, proximaEmision } from "./d
 import { programas } from "./data/programas";
 import { actualizarPQRS, ErrorPQRS, Estado, estados, EventoHistorial, listarPQRS, modoDemo, obtenerPQRS, radicarPQRS, Solicitud } from "./services/pqrs";
 import { cerrarSesion, guardarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
+import { activarEnVivo, EnVivo, enlaceEmbebido, useEnVivo } from "./services/envivo";
 import { mostrarTurnstile, turnstileActivo } from "./services/turnstile";
 
 type IconName = "play" | "menu" | "close" | "arrow" | "clock" | "signal" | "copy" | "lock" | "search" | "check";
@@ -53,16 +54,18 @@ function Eyebrow({ children }: { children: ReactNode }) {
 
 function Header({ path }: { path: string }) {
   const [open, setOpen] = useState(false);
-  const items = [["Inicio", "/"], ["En vivo", "/en-vivo"], ["Programación", "/programacion"], ["Programas", "/programas"], ["PQRS", "/pqrs"]];
+  const envivo = useEnVivo();
+  // "En vivo" y los botones solo aparecen mientras hay una transmisión activa.
+  const items = [["Inicio", "/"], ...(envivo ? [["En vivo", "/en-vivo"]] : []), ["Programación", "/programacion"], ["Programas", "/programas"], ["PQRS", "/pqrs"]];
   return (
     <header className="site-header">
       <div className="container header-inner">
         <AppLink href="/" className="brand-link" onClick={() => setOpen(false)}><Logo /></AppLink>
         <nav className={`main-nav${open ? " is-open" : ""}`} aria-label="Navegación principal">
           {items.map(([label, href]) => <AppLink key={href} href={href} onClick={() => setOpen(false)} className={path === href ? "active" : ""}>{label}</AppLink>)}
-          <AppLink href="/en-vivo" className="button button--primary mobile-live"><Icon name="play" /> Ver en vivo</AppLink>
+          {envivo && <AppLink href="/en-vivo" className="button button--primary mobile-live"><Icon name="play" /> Ver en vivo</AppLink>}
         </nav>
-        <AppLink href="/en-vivo" className="button button--primary desktop-live"><Icon name="play" /> Ver en vivo</AppLink>
+        {envivo && <AppLink href="/en-vivo" className="button button--primary desktop-live" onClick={() => setOpen(false)}><Icon name="play" /> Ver en vivo</AppLink>}
         <Button variant="ghost" className="menu-button" onClick={() => setOpen(!open)}><Icon name={open ? "close" : "menu"} /><span className="sr-only">Menú</span></Button>
       </div>
     </header>
@@ -81,6 +84,10 @@ function Footer() {
       <div className="container footer-bottom"><Text>© 2026 {canal.razonSocial} · NIT {canal.nit}</Text><AppLink href="/admin"><Icon name="lock" /> Ingreso del equipo</AppLink></div>
     </footer>
   );
+}
+
+function LiveVideo({ envivo, large = false }: { envivo: NonNullable<EnVivo>; large?: boolean }) {
+  return <div className={`video-shell video-shell--player${large ? " video-shell--large" : ""}`}><iframe src={enlaceEmbebido(envivo.video)} title={envivo.titulo} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen /><span className="live-badge"><i /> En vivo</span></div>;
 }
 
 function ProgramVisual({ color, compact = false }: { color: string; compact?: boolean }) {
@@ -103,6 +110,7 @@ function Home() {
   };
   const hoy = parrillaSemanal[diaDeHoy()];
   const proxima = proximaEmision();
+  const envivo = useEnVivo();
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setInterval(() => setSlide((value) => (value + 1) % programas.length), 7000);
@@ -110,12 +118,12 @@ function Home() {
   }, []);
   return (
     <>
-      <section className="hero" data-theme="dark">
+      {envivo && <section className="hero" data-theme="dark">
         <div className="container hero-grid">
           <div><Eyebrow>Canal local · El Retiro, Antioquia</Eyebrow><Text as="h1" className="display">La señal de nuestro pueblo, en vivo</Text><Text className="lead">Información, cultura y conversación para reconocer lo que somos y mantenernos conectados.</Text><div className="button-row"><AppLink href="/en-vivo" className="button button--primary"><Icon name="play" /> Ver en vivo</AppLink><AppLink href="/programacion" className="button button--secondary">Programación</AppLink></div></div>
-          <div><div className="video-shell"><span className="live-badge"><i /> En vivo</span><Icon name="signal" /><Text>Señal en directo</Text></div>{proxima && <div className="now-row"><span>Próximo programa · {proxima.dia} {proxima.hora}</span><strong>{proxima.nombre}</strong></div>}</div>
+          <div><LiveVideo envivo={envivo} />{proxima && <div className="now-row"><span>Próximo programa · {proxima.dia} {proxima.hora}</span><strong>{proxima.nombre}</strong></div>}</div>
         </div>
-      </section>
+      </section>}
       <section className="section program-showcase">
         <div className="container">
           <Eyebrow>Producción propia</Eyebrow><div className="section-heading"><Text as="h2">Nuestros programas</Text><span className="carousel-count">{slide + 1} / {programas.length}</span></div>
@@ -140,7 +148,8 @@ function Home() {
 
 function Live() {
   const proxima = proximaEmision();
-  return <section className="section live-page" data-theme="dark"><div className="container"><div className="section-heading"><div><Eyebrow>Señal digital</Eyebrow><Text as="h1">En vivo</Text></div><span className="status"><i /> Transmitiendo ahora</span></div><div className="video-shell video-shell--large"><span className="live-badge"><i /> En vivo</span><Icon name="play" /><Text>Conecta Telecomunicaciones</Text></div>{proxima && <div className="live-info"><article><Eyebrow>Próximo programa · {proxima.dia} {proxima.hora}</Eyebrow><Text as="h3">{proxima.nombre}</Text><Text>{proxima.descripcion}</Text></article></div>}<AppLink href="/programacion" className="button button--secondary">Ver programación de la semana</AppLink></div></section>;
+  const envivo = useEnVivo();
+  return <section className="section live-page" data-theme="dark"><div className="container"><div className="section-heading"><div><Eyebrow>Señal digital</Eyebrow><Text as="h1">En vivo</Text></div>{envivo && <span className="status"><i /> Transmitiendo ahora</span>}</div>{envivo ? <LiveVideo envivo={envivo} large /> : <div className="video-shell video-shell--large"><Icon name="signal" /><Text>No estamos transmitiendo ahora</Text></div>}{proxima && <div className="live-info"><article><Eyebrow>Próximo programa · {proxima.dia} {proxima.hora}</Eyebrow><Text as="h3">{proxima.nombre}</Text><Text>{proxima.descripcion}</Text></article></div>}<AppLink href="/programacion" className="button button--secondary">Ver programación de la semana</AppLink></div></section>;
 }
 
 function Programming() {
@@ -261,7 +270,28 @@ function Admin() {
   const text = query.trim().toLowerCase();
   const visible = items.filter((item) => (tab === "Todas" || (tab === "Abiertas") === isOpen(item)) && (!text || [item.radicado, item.asunto, item.nombre, item.correo].some((field) => field.toLowerCase().includes(text))));
   const open = items.filter(isOpen).length;
-  return <><PageIntro eyebrow="Panel" title="Gestión de PQRS">Revisa y gestiona las solicitudes de la ciudadanía.</PageIntro><section className="section"><div className="container"><div className="admin-actions"><div className="summary"><article><span>Recibidas</span><strong>{items.length}</strong></article><article><span>Abiertas</span><strong>{open}</strong></article><article><span>Respondidas</span><strong>{items.length - open}</strong></article></div><div className="admin-session"><small>{session.correo}</small><div><Button variant="secondary" onClick={load}>Actualizar</Button> <Button variant="ghost" onClick={() => exit()}>Cerrar sesión</Button></div></div></div>{modoDemo && <p className="form-notice">Modo demostración: estos son datos de ejemplo.</p>}{error && <p className="form-error" role="alert">{error}</p>}<div className="tabs" role="tablist">{(["Abiertas", "Cerradas", "Todas"] as const).map((item) => <button role="tab" aria-selected={item === tab} className={item === tab ? "active" : ""} onClick={() => setTab(item)} key={item}>{item}</button>)}</div><label className="search"><Icon name="search" /><input placeholder="Buscar por radicado, asunto o ciudadano" value={query} onChange={(e) => setQuery(e.target.value)} /></label>{loading ? <Text>Cargando solicitudes…</Text> : visible.length === 0 ? <Text>No hay solicitudes para mostrar.</Text> : <div className="table-wrap"><table><thead><tr><th>Radicado</th><th>Tipo</th><th>Asunto y ciudadano</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>{visible.map((item) => <tr key={item.radicado} className="row-link" onClick={() => setSelected(item.radicado)}><td><button className="link-button" onClick={() => setSelected(item.radicado)}><code>{item.radicado}</code></button></td><td>{item.tipo}</td><td><strong>{item.asunto}</strong><small>{item.nombre} · {item.correo}</small></td><td>{formatDate(item.fecha)}</td><td><span className={`state state--${item.estado.replace(" ", "-").toLowerCase()}`}>{item.estado}</span></td></tr>)}</tbody></table></div>}</div></section></>;
+  return <><PageIntro eyebrow="Panel" title="Gestión de PQRS">Revisa y gestiona las solicitudes de la ciudadanía.</PageIntro><section className="section"><div className="container"><div className="admin-actions"><div className="summary"><article><span>Recibidas</span><strong>{items.length}</strong></article><article><span>Abiertas</span><strong>{open}</strong></article><article><span>Respondidas</span><strong>{items.length - open}</strong></article></div><div className="admin-session"><small>{session.correo}</small><div><Button variant="secondary" onClick={load}>Actualizar</Button> <Button variant="ghost" onClick={() => exit()}>Cerrar sesión</Button></div></div></div><LivePanel token={session.token} onError={fail} />{modoDemo && <p className="form-notice">Modo demostración: estos son datos de ejemplo.</p>}{error && <p className="form-error" role="alert">{error}</p>}<div className="tabs" role="tablist">{(["Abiertas", "Cerradas", "Todas"] as const).map((item) => <button role="tab" aria-selected={item === tab} className={item === tab ? "active" : ""} onClick={() => setTab(item)} key={item}>{item}</button>)}</div><label className="search"><Icon name="search" /><input placeholder="Buscar por radicado, asunto o ciudadano" value={query} onChange={(e) => setQuery(e.target.value)} /></label>{loading ? <Text>Cargando solicitudes…</Text> : visible.length === 0 ? <Text>No hay solicitudes para mostrar.</Text> : <div className="table-wrap"><table><thead><tr><th>Radicado</th><th>Tipo</th><th>Asunto y ciudadano</th><th>Fecha</th><th>Estado</th></tr></thead><tbody>{visible.map((item) => <tr key={item.radicado} className="row-link" onClick={() => setSelected(item.radicado)}><td><button className="link-button" onClick={() => setSelected(item.radicado)}><code>{item.radicado}</code></button></td><td>{item.tipo}</td><td><strong>{item.asunto}</strong><small>{item.nombre} · {item.correo}</small></td><td>{formatDate(item.fecha)}</td><td><span className={`state state--${item.estado.replace(" ", "-").toLowerCase()}`}>{item.estado}</span></td></tr>)}</tbody></table></div>}</div></section></>;
+}
+
+function LivePanel({ token, onError }: { token: string; onError: (e: unknown) => void }) {
+  const envivo = useEnVivo();
+  const [link, setLink] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState("");
+  const save = async (event: FormEvent) => {
+    event.preventDefault();
+    setSaving(true);
+    setNotice("");
+    try {
+      const activo = await activarEnVivo(token, link.trim());
+      setLink("");
+      setNotice(activo ? `Listo: "${activo.titulo}" ya aparece en la página.` : "Guardado.");
+    } catch (e) {
+      setNotice(e instanceof Error ? e.message : "No se pudo activar.");
+      onError(e);
+    } finally { setSaving(false); }
+  };
+  return <form className="form-card live-panel" onSubmit={save}><div><Text as="h2">Transmisión en vivo</Text><Text>{envivo ? <>Al aire: <strong>{envivo.titulo}</strong></> : "No hay transmisión activa."} Se quita sola cuando termina el en vivo en YouTube.</Text></div><label className="field"><span>{envivo ? "Cambiar por otro en vivo" : "Enlace del en vivo de YouTube"}</span><input type="url" required value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://youtube.com/live/…" /></label>{notice && <p className="form-notice" role="status">{notice}</p>}<Button type="submit" disabled={saving}>{saving ? "Activando…" : envivo ? "Cambiar" : "Activar"}</Button></form>;
 }
 
 function PqrsDetail({ token, radicado, onBack, onError }: { token: string; radicado: string; onBack: () => void; onError: (e: unknown) => void }) {

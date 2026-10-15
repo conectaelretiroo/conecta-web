@@ -68,3 +68,16 @@ Una vez al mes, desde la hoja: **Archivo → Descargar → Microsoft Excel**, o 
   3. La **Secret Key** es secreta: va solo en Apps Script → Configuración del proyecto → Propiedades del script, con el nombre `TURNSTILE_SECRET`. No la pegues en el repositorio ni en chats.
   4. Pega el `Code.gs` nuevo y crea una **Nueva versión** de la implementación.
   Mientras `TURNSTILE_SECRET` no exista, el script no exige la casilla.
+
+## Transmisión en vivo (YouTube)
+
+El equipo pega el enlace de un en vivo de YouTube en el panel (**Transmisión en vivo → Activar**). Mientras YouTube lo marque al aire o programado, la página muestra el bloque principal de Inicio con el video, los botones "Ver en vivo" y la opción "En vivo" del menú. Cuando el en vivo termina, todo se oculta solo (la página pregunta cada minuto).
+
+Para que el script pueda consultar YouTube hace falta una llave gratuita:
+
+1. En [Google Cloud](https://console.cloud.google.com/), proyecto del cliente OAuth "Sitio Conecta": **APIs y servicios → Biblioteca → YouTube Data API v3 → Habilitar**.
+2. **APIs y servicios → Credenciales → Crear credenciales → Clave de API**. Edítala y en **Restricciones de API** deja solo "YouTube Data API v3".
+3. En Apps Script: **Configuración del proyecto → Propiedades del script → Agregar**: `YOUTUBE_API_KEY` con esa llave. No la pegues en el chat ni en el código.
+4. Pega el `Code.gs` nuevo y crea una **Nueva versión** de la implementación (la dirección /exec no cambia).
+
+Cada consulta gasta 1 unidad de las 10.000 diarias gratis de YouTube y se hace como mucho una vez por minuto.

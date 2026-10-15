@@ -10,6 +10,8 @@
  *   GOOGLE_CLIENT_ID  ID de cliente OAuth de la página (obligatoria para el panel).
  *   TURNSTILE_SECRET  Clave secreta de Cloudflare Turnstile. Si existe, cada PQRS debe
  *                     traer la verificación "no soy un robot" del formulario.
+ *   YOUTUBE_API_KEY   Llave de la API de datos de YouTube. Con ella el panel activa la
+ *                     transmisión en vivo y la página la quita sola cuando termina.
  */
 
 const HOJA_PQRS = 'PQRS';
@@ -69,6 +71,12 @@ function doPost(e) {
         break;
       case 'actualizar':
         resultado = { solicitud: actualizar_(verificar_(datos.token), datos.cambios || {}) };
+        break;
+      case 'envivo':
+        resultado = { envivo: enVivo_() };
+        break;
+      case 'envivo-guardar':
+        resultado = { envivo: guardarEnVivo_(verificar_(datos.token), datos.enlace) };
         break;
       default:
         throw new ErrorPublico('Acción no válida.');
@@ -300,6 +308,83 @@ function actualizar_(usuario, cambios) {
     ].join('\n'));
   }
   return solicitud;
+}
+
+// ---------- Transmisión en vivo (YouTube) ----------
+
+const PROPIEDAD_ENVIVO = 'ENVIVO';
+// La página pregunta cada minuto; YouTube se consulta como mucho una vez por minuto.
+const SEGUNDOS_ENVIVO = 60;
+
+/** Lo que la página muestra: { video, titulo } mientras el en vivo esté al aire o programado; si no, null. */
+function enVivo_() {
+  const cache = CacheService.getScriptCache();
+  const enCache = cache.get('envivo');
+  if (enCache) return JSON.parse(enCache).envivo;
+
+  const propiedades = PropertiesService.getScriptProperties();
+  const guardado = JSON.parse(propiedades.getProperty(PROPIEDAD_ENVIVO) || 'null');
+  let envivo = null;
+  if (guardado) {
+    const info = consultarYoutube_(guardado.video);
+    if (!info) {
+      // YouTube no respondió: se sigue mostrando lo último que se sabía.
+      envivo = { video: guardado.video, titulo: guardado.titulo };
+    } else if (info.activo) {
+      envivo = { video: guardado.video, titulo: info.titulo };
+    } else {
+      // Terminó (o lo borraron): se quita solo.
+      propiedades.deleteProperty(PROPIEDAD_ENVIVO);
+    }
+  }
+  cache.put('envivo', JSON.stringify({ envivo: envivo }), SEGUNDOS_ENVIVO);
+  return envivo;
+}
+
+/** El equipo pega el enlace del en vivo de YouTube desde el panel. */
+function guardarEnVivo_(usuario, enlace) {
+  const video = idYoutube_(enlace);
+  if (!video) throw new ErrorPublico('Pega el enlace del video en vivo de YouTube, por ejemplo https://youtube.com/live/…');
+  if (!PropertiesService.getScriptProperties().getProperty('YOUTUBE_API_KEY')) {
+    throw new ErrorPublico('Falta configurar YOUTUBE_API_KEY en el script.');
+  }
+  const info = consultarYoutube_(video);
+  if (!info) throw new ErrorPublico('No pudimos consultar YouTube. Intenta de nuevo.');
+  if (!info.existe) throw new ErrorPublico('No encontramos ese video. Revisa que sea público u oculto, no privado.');
+  if (!info.activo) throw new ErrorPublico('Ese video no es un en vivo al aire ni programado.');
+
+  PropertiesService.getScriptProperties().setProperty(PROPIEDAD_ENVIVO, JSON.stringify({
+    video: video, titulo: info.titulo, activadoPor: usuario.correo, fecha: fecha_(new Date()),
+  }));
+  CacheService.getScriptCache().remove('envivo');
+  return { video: video, titulo: info.titulo };
+}
+
+/** Acepta youtube.com/watch?v=, youtube.com/live/, youtu.be/ y el código de 11 caracteres. */
+function idYoutube_(enlace) {
+  const texto = String(enlace || '').trim();
+  if (/^[\w-]{11}$/.test(texto)) return texto;
+  const encontrado = texto.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|live\/|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/);
+  return encontrado ? encontrado[1] : '';
+}
+
+/** { existe, activo, titulo } según YouTube, o null si no se pudo consultar. */
+function consultarYoutube_(video) {
+  const llave = PropertiesService.getScriptProperties().getProperty('YOUTUBE_API_KEY');
+  if (!llave) return null;
+  const respuesta = UrlFetchApp.fetch(
+    'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=' + encodeURIComponent(video) + '&key=' + encodeURIComponent(llave),
+    { muteHttpExceptions: true },
+  );
+  if (respuesta.getResponseCode() !== 200) {
+    console.error('YouTube respondió ' + respuesta.getResponseCode() + ': ' + respuesta.getContentText());
+    return null;
+  }
+  const items = JSON.parse(respuesta.getContentText()).items || [];
+  if (!items.length) return { existe: false, activo: false, titulo: '' };
+  const snippet = items[0].snippet;
+  // "live" = al aire, "upcoming" = programado, "none" = terminó o no es un en vivo.
+  return { existe: true, activo: snippet.liveBroadcastContent !== 'none', titulo: snippet.title };
 }
 
 // ---------- Utilidades ----------

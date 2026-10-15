@@ -45,7 +45,7 @@ export class ErrorPQRS extends Error {
 const API = import.meta.env.VITE_PQRS_API as string | undefined;
 export const modoDemo = !API;
 
-async function llamar<T>(accion: string, datos: Record<string, unknown>): Promise<T> {
+export async function llamar<T>(accion: string, datos: Record<string, unknown>): Promise<T> {
   let respuesta: Response;
   try {
     // text/plain evita la petición previa de CORS que Apps Script no responde.
