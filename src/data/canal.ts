@@ -10,4 +10,9 @@ export const canal = {
   razonSocial: "[Razón social]",
   nit: "[NIT]",
   youtubeLive: "",
+  redes: {
+    facebook: "https://www.facebook.com/share/1H6q1Nzvwk/",
+    instagram: "https://www.instagram.com/conectaelretiro/",
+    youtube: "https://www.youtube.com/@conectaelretiro",
+  },
 };

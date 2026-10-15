@@ -79,7 +79,7 @@ function Footer() {
         <div><Logo inverse /><Text>Televisión local hecha con y para la comunidad de El Retiro.</Text></div>
         <div><Text as="h3">Contacto</Text><Text>{canal.direccion}</Text><Text>{canal.telefono} · {canal.celular}</Text><Text>{canal.correo}</Text></div>
         <div><Text as="h3">Atención al ciudadano</Text><AppLink href="/pqrs">Radicar PQRS</AppLink><AppLink href="/programacion">Programación</AppLink><AppLink href="/politica-de-datos">Política de datos</AppLink></div>
-        <div><Text as="h3">Síguenos</Text><a href="#facebook">Facebook</a><a href="#instagram">Instagram</a><a href="#youtube">YouTube</a></div>
+        <div><Text as="h3">Síguenos</Text><a href={canal.redes.facebook} target="_blank" rel="noopener noreferrer">Facebook</a><a href={canal.redes.instagram} target="_blank" rel="noopener noreferrer">Instagram</a><a href={canal.redes.youtube} target="_blank" rel="noopener noreferrer">YouTube</a></div>
       </div>
       <div className="container footer-bottom"><Text>© 2026 {canal.razonSocial} · NIT {canal.nit}</Text><AppLink href="/admin"><Icon name="lock" /> Ingreso del equipo</AppLink></div>
     </footer>
