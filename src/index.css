@@ -438,3 +438,15 @@ main > section:nth-child(2) { animation: sectionEnter 560ms 80ms cubic-bezier(0.
 .confirm-box { display: grid; gap: 0.75rem; padding: 1rem; border: 0.0625rem solid #f1b5cc; border-radius: var(--radius-s); background: #fdf0f5; }
 .admin-bar ~ .form-notice, .admin-bar ~ .form-error { margin-bottom: 1.5rem; }
 .help-column article p + p { margin-top: 0.5rem; }
+
+/* Sin en vivo, los programas abren la página: menos aire arriba para que la tarjeta se vea completa sin bajar. */
+.program-showcase--first { padding-block: 2rem 3.5rem; }
+.program-showcase--first .eyebrow { margin-bottom: 0.25rem; }
+.program-showcase--first .section-heading { margin-bottom: 1.25rem; }
+.program-showcase--first .container::before { top: 0.5rem; }
+.program-showcase--first .featured-program { min-height: 22rem; }
+.program-showcase--first .program-visual { min-height: 16rem; }
+@media (max-width: 760px) {
+  .program-showcase--first { padding-top: 1.5rem; }
+  .program-showcase--first .program-visual { min-height: 11rem; }
+}

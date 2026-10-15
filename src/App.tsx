@@ -124,7 +124,7 @@ function Home() {
           <div><LiveVideo envivo={envivo} />{proxima && <div className="now-row"><span>Próximo programa · {proxima.dia} {proxima.hora}</span><strong>{proxima.nombre}</strong></div>}</div>
         </div>
       </section>}
-      <section className="section program-showcase">
+      <section className={`section program-showcase${envivo ? "" : " program-showcase--first"}`}>
         <div className="container">
           <Eyebrow>Producción propia</Eyebrow><div className="section-heading"><Text as="h2">Nuestros programas</Text><span className="carousel-count">{slide + 1} / {programas.length}</span></div>
           <div
