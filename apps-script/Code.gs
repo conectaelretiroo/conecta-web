@@ -8,6 +8,8 @@
  *
  * Propiedades del script (Configuración del proyecto → Propiedades del script):
  *   GOOGLE_CLIENT_ID  ID de cliente OAuth de la página (obligatoria para el panel).
+ *   TURNSTILE_SECRET  Clave secreta de Cloudflare Turnstile. Si existe, cada PQRS debe
+ *                     traer la verificación "no soy un robot" del formulario.
  */
 
 const HOJA_PQRS = 'PQRS';
@@ -23,6 +25,8 @@ const COL = COLUMNAS.reduce((mapa, nombre, i) => { mapa[nombre] = i; return mapa
 const TIPOS = ['Petición', 'Queja', 'Reclamo', 'Sugerencia', 'Felicitación'];
 const ESTADOS = ['Radicada', 'En trámite', 'Respondida', 'Cerrada'];
 const LIMITE_POR_HORA = 5;
+// Tope para todo el sitio, por si un robot cambia de correo en cada envío.
+const LIMITE_TOTAL_POR_HORA = 30;
 const NOMBRE_REMITENTE = 'Conecta Telecomunicaciones';
 // Si el ciudadano responde un correo del canal, su respuesta llega por esta dirección.
 const RESPONDER_A = 'contacto@conectaelretiro.tv';
@@ -95,6 +99,21 @@ class ErrorPublico extends Error {
 
 // ---------- Radicar (público) ----------
 
+/** Comprueba con Cloudflare la casilla "no soy un robot". Sin TURNSTILE_SECRET no se exige. */
+function verificarHumano_(token) {
+  const secreto = PropertiesService.getScriptProperties().getProperty('TURNSTILE_SECRET');
+  if (!secreto) return;
+  if (!token) throw new ErrorPublico('Confirma que no eres un robot y envía de nuevo.');
+  const respuesta = UrlFetchApp.fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'post',
+    payload: { secret: secreto, response: String(token) },
+    muteHttpExceptions: true,
+  });
+  let resultado = {};
+  try { resultado = JSON.parse(respuesta.getContentText()); } catch (e) { /* respuesta inválida: se rechaza */ }
+  if (!resultado.success) throw new ErrorPublico('No pudimos confirmar que no eres un robot. Intenta de nuevo.');
+}
+
 function radicar_(s) {
   // Campo trampa: los humanos no lo ven; si llega lleno es un robot.
   if (s.sitio) throw new ErrorPublico('No pudimos procesar la solicitud.');
@@ -121,6 +140,12 @@ function radicar_(s) {
   if (envios >= LIMITE_POR_HORA) {
     throw new ErrorPublico('Recibimos varias solicitudes desde este correo. Intenta de nuevo en una hora.');
   }
+  const claveTotal = 'envios-total:' + Utilities.formatDate(new Date(), ZONA, 'yyyyMMddHH');
+  const total = Number(cache.get(claveTotal) || 0);
+  if (total >= LIMITE_TOTAL_POR_HORA) {
+    throw new ErrorPublico('Estamos recibiendo muchas solicitudes. Intenta de nuevo en una hora.');
+  }
+  verificarHumano_(s.turnstile);
 
   const candado = LockService.getScriptLock();
   candado.waitLock(20000);
@@ -146,6 +171,7 @@ function radicar_(s) {
     candado.releaseLock();
   }
   cache.put(clave, String(envios + 1), 3600);
+  cache.put(claveTotal, String(total + 1), 3600);
 
   correo_(solicitud.correo, 'Radicamos tu solicitud ' + radicado, [
     'Hola, ' + solicitud.nombre + '.',
