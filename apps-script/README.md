@@ -58,3 +58,13 @@ Sin esas variables la página funciona en **modo demostración**: el formulario 
 ## Respaldo
 
 Una vez al mes, desde la hoja: **Archivo → Descargar → Microsoft Excel**, o **Archivo → Hacer una copia** en una carpeta de respaldo del Drive del canal.
+
+## Protección contra robots
+
+- Campo trampa invisible, 5 envíos por correo por hora y 30 PQRS por hora en todo el sitio (`LIMITE_POR_HORA` y `LIMITE_TOTAL_POR_HORA` en `Code.gs`).
+- Casilla "no soy un robot" de Cloudflare Turnstile (gratis), opcional:
+  1. En Cloudflare → **Turnstile** → **Add widget**: nombre `PQRS Conecta`, dominios `conectaelretiro.tv` y `conecta-web.conectaelretiroo.workers.dev`, modo **Managed**.
+  2. La **Site Key** es pública: va en `.env.production` como `VITE_TURNSTILE_SITE_KEY`.
+  3. La **Secret Key** es secreta: va solo en Apps Script → Configuración del proyecto → Propiedades del script, con el nombre `TURNSTILE_SECRET`. No la pegues en el repositorio ni en chats.
+  4. Pega el `Code.gs` nuevo y crea una **Nueva versión** de la implementación.
+  Mientras `TURNSTILE_SECRET` no exista, el script no exige la casilla.
