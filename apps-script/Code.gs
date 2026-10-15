@@ -24,6 +24,8 @@ const TIPOS = ['Petición', 'Queja', 'Reclamo', 'Sugerencia', 'Felicitación'];
 const ESTADOS = ['Radicada', 'En trámite', 'Respondida', 'Cerrada'];
 const LIMITE_POR_HORA = 5;
 const NOMBRE_REMITENTE = 'Conecta Telecomunicaciones';
+// Si el ciudadano responde un correo del canal, su respuesta llega por esta dirección.
+const RESPONDER_A = 'contacto@conectaelretiro.tv';
 const ZONA = 'America/Bogota';
 
 /** Ejecutar una sola vez desde el editor: crea las pestañas con sus encabezados. */
@@ -31,7 +33,7 @@ function configurar() {
   const libro = SpreadsheetApp.getActive();
   crearHoja_(libro, HOJA_PQRS, COLUMNAS);
   crearHoja_(libro, HOJA_HISTORIAL, ['Fecha', 'Radicado', 'Acción', 'Detalle', 'Responsable']);
-  crearHoja_(libro, HOJA_EQUIPO, ['Correo', 'Nombre']);
+  crearHoja_(libro, HOJA_EQUIPO, ['Correo', 'Nombre', 'Avisos']);
   const estado = libro.getSheetByName(HOJA_PQRS).getRange(2, COL['Estado'] + 1, 1000, 1);
   estado.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(ESTADOS, true).build());
 }
@@ -156,7 +158,7 @@ function radicar_(s) {
     NOMBRE_REMITENTE,
   ].join('\n'));
 
-  const equipo = correosEquipo_();
+  const equipo = correosAvisos_();
   if (equipo.length) {
     correo_(equipo.join(','), 'Nueva PQRS ' + radicado + ': ' + solicitud.asunto, [
       'Tipo: ' + solicitud.tipo,
@@ -314,16 +316,25 @@ function historial_(radicado, accion, detalle, responsable) {
 }
 
 function correosEquipo_() {
+  return filasEquipo_().map((f) => f.correo);
+}
+
+/** Quienes reciben el aviso de cada PQRS nueva: todo el equipo, salvo quien tenga "no" en la columna Avisos. */
+function correosAvisos_() {
+  return filasEquipo_().filter((f) => f.avisos !== 'no').map((f) => f.correo);
+}
+
+function filasEquipo_() {
   const hoja = hoja_(HOJA_EQUIPO);
   if (hoja.getLastRow() < 2) return [];
-  return hoja.getRange(2, 1, hoja.getLastRow() - 1, 1).getValues()
-    .map((f) => String(f[0]).trim().toLowerCase())
-    .filter((c) => c.indexOf('@') > 0);
+  return hoja.getRange(2, 1, hoja.getLastRow() - 1, 3).getValues()
+    .map((f) => ({ correo: String(f[0]).trim().toLowerCase(), avisos: String(f[2]).trim().toLowerCase() }))
+    .filter((f) => f.correo.indexOf('@') > 0);
 }
 
 function correo_(para, asunto, cuerpo) {
   try {
-    MailApp.sendEmail({ to: para, subject: asunto, body: cuerpo, name: NOMBRE_REMITENTE });
+    MailApp.sendEmail({ to: para, subject: asunto, body: cuerpo, name: NOMBRE_REMITENTE, replyTo: RESPONDER_A });
   } catch (error) {
     // Un correo fallido no debe perder la PQRS, que ya quedó en la hoja.
     console.error('No se pudo enviar el correo a ' + para + ': ' + error);

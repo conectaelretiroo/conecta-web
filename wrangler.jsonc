@@ -14,5 +14,13 @@
     "directory": "./dist",
     // Cualquier ruta del sitio (/pqrs, /admin…) carga index.html y React decide qué mostrar.
     "not_found_handling": "single-page-application"
+  },
+  // Copia de pruebas: rama "pruebas" → conecta-web-pruebas.conectaelretiroo.workers.dev.
+  // Se publica con `npx wrangler deploy --env pruebas` y no usa el dominio propio.
+  "env": {
+    "pruebas": {
+      "workers_dev": true,
+      "routes": []
+    }
   }
 }
