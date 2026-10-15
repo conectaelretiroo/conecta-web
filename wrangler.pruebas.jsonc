@@ -1,3 +1,4 @@
+// Publica en Cloudflare cada push a la rama "pruebas" (Worker conecta-web-pruebas).
 // Copia de pruebas: rama "pruebas" → conecta-web-pruebas.conectaelretiroo.workers.dev.
 // Se publica con `npx wrangler deploy -c wrangler.pruebas.jsonc` y no usa el dominio propio.
 // Va en un archivo aparte para que la configuración de main quede igual a la que ya desplegaba bien.
