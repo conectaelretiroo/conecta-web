@@ -30,7 +30,7 @@ const LIMITE_POR_HORA = 5;
 // Tope para todo el sitio, por si un robot cambia de correo en cada envío.
 const LIMITE_TOTAL_POR_HORA = 30;
 const NOMBRE_REMITENTE = 'Conecta Telecomunicaciones';
-// Si el ciudadano responde un correo del canal, su respuesta llega por esta dirección.
+// Los correos del canal salen desde esta dirección (alias de Gmail) y las respuestas llegan a ella.
 const RESPONDER_A = 'contacto@conectaelretiro.tv';
 const ZONA = 'America/Bogota';
 
@@ -42,6 +42,11 @@ function configurar() {
   crearHoja_(libro, HOJA_EQUIPO, ['Correo', 'Nombre', 'Avisos']);
   const estado = libro.getSheetByName(HOJA_PQRS).getRange(2, COL['Estado'] + 1, 1000, 1);
   estado.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(ESTADOS, true).build());
+}
+
+/** Ejecutar desde el editor después de cambiar permisos: pide la autorización y muestra los alias de Gmail. */
+function autorizar() {
+  console.log('Alias de "Enviar como": ' + GmailApp.getAliases().join(', '));
 }
 
 function crearHoja_(libro, nombre, encabezados) {
@@ -445,7 +450,10 @@ function filasEquipo_() {
 
 function correo_(para, asunto, cuerpo) {
   try {
-    MailApp.sendEmail({ to: para, subject: asunto, body: cuerpo, name: NOMBRE_REMITENTE, replyTo: RESPONDER_A });
+    const opciones = { name: NOMBRE_REMITENTE, replyTo: RESPONDER_A };
+    // Sale desde contacto@ si ese alias está en Gmail → Configuración → "Enviar como"; si no, desde la cuenta del script.
+    if (GmailApp.getAliases().indexOf(RESPONDER_A) >= 0) opciones.from = RESPONDER_A;
+    GmailApp.sendEmail(para, asunto, cuerpo, opciones);
   } catch (error) {
     // Un correo fallido no debe perder la PQRS, que ya quedó en la hoja.
     console.error('No se pudo enviar el correo a ' + para + ': ' + error);

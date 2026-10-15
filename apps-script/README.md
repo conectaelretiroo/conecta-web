@@ -81,3 +81,13 @@ Para que el script pueda consultar YouTube hace falta una llave gratuita:
 4. Pega el `Code.gs` nuevo y crea una **Nueva versión** de la implementación (la dirección /exec no cambia).
 
 Cada consulta gasta 1 unidad de las 10.000 diarias gratis de YouTube y se hace como mucho una vez por minuto.
+
+## Correos desde contacto@conectaelretiro.tv
+
+Los correos del script salen desde `contacto@conectaelretiro.tv` si ese alias está en Gmail (cuenta del canal) → Configuración → Cuentas e importación → **Enviar mensaje como**. Si no está, salen desde la cuenta de Gmail del canal, con "responder a" contacto@.
+
+Este cambio usa Gmail en vez de MailApp, así que al actualizar el script:
+
+1. Pega `Code.gs` y también `appsscript.json` (nuevo permiso de Gmail).
+2. En el editor elige la función **autorizar** y dale **Ejecutar**. Acepta los permisos con la cuenta del canal. En el registro debe aparecer `contacto@conectaelretiro.tv`.
+3. Crea una **Nueva versión** de la implementación.
