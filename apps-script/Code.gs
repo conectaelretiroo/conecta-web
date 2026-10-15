@@ -25,7 +25,7 @@ const ESTADOS = ['Radicada', 'En trámite', 'Respondida', 'Cerrada'];
 const LIMITE_POR_HORA = 5;
 const NOMBRE_REMITENTE = 'Conecta Telecomunicaciones';
 // Si el ciudadano responde un correo del canal, su respuesta llega por esta dirección.
-const RESPONDER_A = 'pqrs@conectaelretiro.tv';
+const RESPONDER_A = 'contacto@conectaelretiro.tv';
 const ZONA = 'America/Bogota';
 
 /** Ejecutar una sola vez desde el editor: crea las pestañas con sus encabezados. */
