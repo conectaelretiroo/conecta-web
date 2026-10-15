@@ -31,6 +31,7 @@ export type NuevaSolicitud = {
   descripcion: string;
   autorizacion: boolean;
   sitio: string; // campo trampa para robots; siempre vacío
+  turnstile?: string; // casilla "no soy un robot" de Cloudflare, si está activa
 };
 
 export type EventoHistorial = { fecha: string; accion: string; detalle: string; responsable: string };

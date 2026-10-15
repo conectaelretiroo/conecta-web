@@ -5,6 +5,7 @@ import { diaDeHoy, dias, fechaDeHoy, parrillaSemanal, proximaEmision } from "./d
 import { programas } from "./data/programas";
 import { actualizarPQRS, ErrorPQRS, Estado, estados, EventoHistorial, listarPQRS, modoDemo, obtenerPQRS, radicarPQRS, Solicitud } from "./services/pqrs";
 import { cerrarSesion, guardarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
+import { mostrarTurnstile, turnstileActivo } from "./services/turnstile";
 
 type IconName = "play" | "menu" | "close" | "arrow" | "clock" | "signal" | "copy" | "lock" | "search" | "check";
 
@@ -166,14 +167,27 @@ function Pqrs() {
   const [description, setDescription] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
+  const [captcha, setCaptcha] = useState("");
+  const casilla = useRef<HTMLDivElement>(null);
+  const reiniciarCasilla = useRef(() => {});
+  useEffect(() => {
+    if (!casilla.current) return;
+    const widget = mostrarTurnstile(casilla.current, setCaptcha);
+    reiniciarCasilla.current = widget.reiniciar;
+    return widget.quitar;
+  }, [sent]);
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (turnstileActivo && !captcha) {
+      setError("Confirma que no eres un robot.");
+      return;
+    }
     const data = new FormData(event.currentTarget);
     const value = (name: string) => String(data.get(name) ?? "").trim();
     setSending(true);
     setError("");
     try {
-      const radicado = await radicarPQRS({ tipo: type, nombre: value("nombre"), correo: value("correo"), telefono: value("telefono"), ubicacion: value("ubicacion"), asunto: value("asunto"), descripcion: description.trim(), autorizacion: data.get("autorizacion") === "on", sitio: value("sitio") });
+      const radicado = await radicarPQRS({ tipo: type, nombre: value("nombre"), correo: value("correo"), telefono: value("telefono"), ubicacion: value("ubicacion"), asunto: value("asunto"), descripcion: description.trim(), autorizacion: data.get("autorizacion") === "on", sitio: value("sitio"), turnstile: captcha || undefined });
       setDescription("");
       setType("Petición");
       setSent(radicado);
@@ -181,11 +195,13 @@ function Pqrs() {
     } catch (e) {
       setError(e instanceof Error ? e.message : "No pudimos enviar la solicitud. Intenta de nuevo.");
     } finally {
+      // Cada verificación sirve una sola vez.
+      reiniciarCasilla.current();
       setSending(false);
     }
   };
   if (sent) return <><PageIntro eyebrow="Atención al ciudadano" title="Solicitud radicada" tone="green">Guarda este número de radicado para cualquier comunicación con el canal.</PageIntro><section className="section"><div className="container confirmation"><span className="success-icon"><Icon name="check" /></span><Text as="h2">Recibimos tu solicitud</Text><div className="ticket">{sent}<Button variant="ghost" onClick={() => navigator.clipboard?.writeText(sent)}><Icon name="copy" /> Copiar</Button></div><Text>Te enviamos una confirmación a tu correo y por ese medio recibirás la respuesta.</Text><Button onClick={() => setSent("")}>Radicar otra solicitud</Button></div></section></>;
-  return <><PageIntro eyebrow="Atención al ciudadano" title="Peticiones, quejas, reclamos y sugerencias">Radica tu solicitud y recibe un número de radicado.</PageIntro><section className="section"><div className="container form-layout"><form className="form-card" onSubmit={submit}><Text as="h2">Radicar solicitud</Text>{modoDemo && <p className="form-notice">Formulario en modo de prueba: las solicitudes todavía no se guardan.</p>}<fieldset><legend>Tipo de solicitud</legend><div className="chips">{["Petición", "Queja", "Reclamo", "Sugerencia", "Felicitación"].map((item) => <button type="button" aria-pressed={type === item} className={type === item ? "active" : ""} onClick={() => setType(item)} key={item}>{item}</button>)}</div></fieldset><div className="field-grid"><Field label="Nombre completo" name="nombre" required maxLength={120} /><Field label="Correo electrónico" name="correo" type="email" required maxLength={254} help="Aquí te enviaremos la respuesta." /><Field label="Teléfono (opcional)" name="telefono" type="tel" maxLength={30} /><Field label="Barrio o vereda" name="ubicacion" required maxLength={120} /></div><Field label="Asunto" name="asunto" required maxLength={150} /><label className="field"><span>Descripción *</span><textarea name="descripcion" required maxLength={4800} value={description} onChange={(e) => setDescription(e.target.value)} /><small>{description.length} de 4.800 caracteres</small></label><label className="trap" aria-hidden="true">Sitio web<input name="sitio" tabIndex={-1} autoComplete="off" /></label><label className="checkbox"><input type="checkbox" name="autorizacion" required /><span>Autorizo el tratamiento de mis datos personales según la <AppLink href="/politica-de-datos">política de tratamiento de datos</AppLink>.</span></label>{error && <p className="form-error" role="alert">{error}</p>}<Button type="submit" disabled={sending}>{sending ? "Enviando…" : "Enviar solicitud"}</Button></form><aside className="help-column"><article><Text as="h3">¿Qué tipo de solicitud elegir?</Text><Text><strong>Petición:</strong> solicita información o una gestión.</Text><Text><strong>Queja:</strong> expresa inconformidad con la atención.</Text><Text><strong>Reclamo:</strong> pide corregir una situación.</Text><Text><strong>Sugerencia:</strong> propone una mejora.</Text></article><article><Text as="h3">Otros canales de atención</Text><Text>{canal.direccion}</Text><Text>{canal.telefono}</Text><Text>{canal.correo}</Text></article></aside></div></section></>;
+  return <><PageIntro eyebrow="Atención al ciudadano" title="Peticiones, quejas, reclamos y sugerencias">Radica tu solicitud y recibe un número de radicado.</PageIntro><section className="section"><div className="container form-layout"><form className="form-card" onSubmit={submit}><Text as="h2">Radicar solicitud</Text>{modoDemo && <p className="form-notice">Formulario en modo de prueba: las solicitudes todavía no se guardan.</p>}<fieldset><legend>Tipo de solicitud</legend><div className="chips">{["Petición", "Queja", "Reclamo", "Sugerencia", "Felicitación"].map((item) => <button type="button" aria-pressed={type === item} className={type === item ? "active" : ""} onClick={() => setType(item)} key={item}>{item}</button>)}</div></fieldset><div className="field-grid"><Field label="Nombre completo" name="nombre" required maxLength={120} /><Field label="Correo electrónico" name="correo" type="email" required maxLength={254} help="Aquí te enviaremos la respuesta." /><Field label="Teléfono (opcional)" name="telefono" type="tel" maxLength={30} /><Field label="Barrio o vereda" name="ubicacion" required maxLength={120} /></div><Field label="Asunto" name="asunto" required maxLength={150} /><label className="field"><span>Descripción *</span><textarea name="descripcion" required maxLength={4800} value={description} onChange={(e) => setDescription(e.target.value)} /><small>{description.length} de 4.800 caracteres</small></label><label className="trap" aria-hidden="true">Sitio web<input name="sitio" tabIndex={-1} autoComplete="off" /></label><label className="checkbox"><input type="checkbox" name="autorizacion" required /><span>Autorizo el tratamiento de mis datos personales según la <AppLink href="/politica-de-datos">política de tratamiento de datos</AppLink>.</span></label>{turnstileActivo && <div ref={casilla} className="captcha" />}{error && <p className="form-error" role="alert">{error}</p>}<Button type="submit" disabled={sending}>{sending ? "Enviando…" : "Enviar solicitud"}</Button></form><aside className="help-column"><article><Text as="h3">¿Qué tipo de solicitud elegir?</Text><Text><strong>Petición:</strong> solicita información o una gestión.</Text><Text><strong>Queja:</strong> expresa inconformidad con la atención.</Text><Text><strong>Reclamo:</strong> pide corregir una situación.</Text><Text><strong>Sugerencia:</strong> propone una mejora.</Text></article><article><Text as="h3">Otros canales de atención</Text><Text>{canal.direccion}</Text><Text>{canal.telefono}</Text><Text>{canal.correo}</Text></article></aside></div></section></>;
 }
 
 function formatDate(value: string) {
