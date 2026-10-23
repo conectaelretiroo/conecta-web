@@ -2,6 +2,7 @@ import { FormEvent, ReactNode, useEffect, useRef, useState } from "react";
 import Logo from "./components/Logo";
 import { canal } from "./data/canal";
 import { diaDeHoy, dias, fechaDeHoy, parrillaSemanal, proximaEmision } from "./data/parrilla";
+import { canales } from "./data/canales";
 import { programas } from "./data/programas";
 import { actualizarPQRS, ErrorPQRS, Estado, estados, EventoHistorial, listarPQRS, modoDemo, obtenerPQRS, radicarPQRS, Solicitud } from "./services/pqrs";
 import { cerrarSesion, guardarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
@@ -56,7 +57,7 @@ function Header({ path }: { path: string }) {
   const [open, setOpen] = useState(false);
   const envivo = useEnVivo();
   // "En vivo" y los botones solo aparecen mientras hay una transmisión activa.
-  const items = [["Inicio", "/"], ...(envivo ? [["En vivo", "/en-vivo"]] : []), ["Programación", "/programacion"], ["Programas", "/programas"], ["PQRS", "/pqrs"]];
+  const items = [["Inicio", "/"], ...(envivo ? [["En vivo", "/en-vivo"]] : []), ["Programación", "/programacion"], ["Programas", "/programas"], ["Canales", "/canales"], ["PQRS", "/pqrs"]];
   return (
     <header className="site-header">
       <div className="container header-inner">
@@ -160,6 +161,16 @@ function Programming() {
 
 function Programs() {
   return <><PageIntro eyebrow="Producción propia" title="Programas" tone="orange">Historias, información y conversaciones hechas desde El Retiro.</PageIntro><section className="section"><div className="container program-grid">{programas.map((program) => <article className="program-card" key={program.nombre}><ProgramVisual color={program.color} compact /><div><Eyebrow>{program.categoria}</Eyebrow><Text as="h2">{program.nombre}</Text><Text>{program.descripcion}</Text><Text className="schedule"><Icon name="clock" /> {program.horario}</Text></div></article>)}</div></section></>;
+}
+
+function Channels() {
+  const [category, setCategory] = useState("Todos");
+  const [query, setQuery] = useState("");
+  const categories = ["Todos", ...Array.from(new Set(canales.map((canal) => canal.categoria)))];
+  const text = query.trim().toLowerCase();
+  const visible = [...canales].sort((a, b) => a.numero - b.numero).filter((canal) => (category === "Todos" || canal.categoria === category) && (!text || canal.nombre.toLowerCase().includes(text) || String(canal.numero) === text));
+  const initials = (name: string) => name.split(/\s+/).filter((word) => /^[A-ZÁÉÍÓÚÑ0-9]/.test(word)).slice(0, 2).map((word) => word[0]).join("");
+  return <><PageIntro eyebrow="Servicio de parabólica" title="Canales" tone="cyan">Estos son los canales que recibes con el servicio de televisión de Conecta Digital.</PageIntro><section className="section"><div className="container"><div className="channel-tools"><div className="tabs" role="tablist">{categories.map((item) => <button role="tab" aria-selected={item === category} className={item === category ? "active" : ""} onClick={() => setCategory(item)} key={item}>{item}</button>)}</div><label className="search"><Icon name="search" /><input placeholder="Buscar por nombre o número" value={query} onChange={(e) => setQuery(e.target.value)} /></label></div>{visible.length ? <div className="channel-grid">{visible.map((canal) => <article className="channel-card" key={canal.numero}><span className="channel-number">{canal.numero}</span><div className="channel-logo">{canal.logo ? <img src={canal.logo} alt="" loading="lazy" /> : <span>{initials(canal.nombre)}</span>}</div><div><Text as="h3">{canal.nombre}</Text><Text>{canal.categoria}</Text></div></article>)}</div> : <Text>No encontramos canales con esa búsqueda.</Text>}</div></section></>;
 }
 
 function PageIntro({ eyebrow, title, tone = "teal", children }: { eyebrow: string; title: string; tone?: "teal" | "cyan" | "orange" | "green"; children: ReactNode }) {
@@ -368,6 +379,6 @@ function NotFound() {
 export default function App() {
   const [path, setPath] = useState(window.location.pathname);
   useEffect(() => { const update = () => setPath(window.location.pathname); window.addEventListener("popstate", update); return () => window.removeEventListener("popstate", update); }, []);
-  const pages: Record<string, ReactNode> = { "/": <Home />, "/en-vivo": <Live />, "/programacion": <Programming />, "/programas": <Programs />, "/pqrs": <Pqrs />, "/admin": <Admin />, "/politica-de-datos": <Policy /> };
+  const pages: Record<string, ReactNode> = { "/": <Home />, "/en-vivo": <Live />, "/programacion": <Programming />, "/programas": <Programs />, "/canales": <Channels />, "/pqrs": <Pqrs />, "/admin": <Admin />, "/politica-de-datos": <Policy /> };
   return <><Header path={path} /><main>{pages[path] ?? <NotFound />}</main><Footer /></>;
 }
