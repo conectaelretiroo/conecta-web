@@ -82,3 +82,6 @@ export const canales: Canal[] = [
   { numero: 71, nombre: "Mi Música Reggaetón", categoria: "Música" },
   { numero: 72, nombre: "Telenostalgia", categoria: "Música" },
 ];
+
+/** Orden de las pestañas de la página Canales. */
+export const categorias = ["Nacional", "Regional", "Local", "Deportes", "Infantil", "Documentales y estilo de vida", "Películas y series", "Noticias", "Variedades", "Religiosos", "Música"];

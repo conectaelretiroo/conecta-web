@@ -2,7 +2,7 @@ import { FormEvent, ReactNode, useEffect, useRef, useState } from "react";
 import Logo from "./components/Logo";
 import { canal } from "./data/canal";
 import { diaDeHoy, dias, fechaDeHoy, parrillaSemanal, proximaEmision } from "./data/parrilla";
-import { canales } from "./data/canales";
+import { canales, categorias } from "./data/canales";
 import { programas } from "./data/programas";
 import { actualizarPQRS, ErrorPQRS, Estado, estados, EventoHistorial, listarPQRS, modoDemo, obtenerPQRS, radicarPQRS, Solicitud } from "./services/pqrs";
 import { cerrarSesion, guardarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
@@ -166,10 +166,14 @@ function Programs() {
 function Channels() {
   const [category, setCategory] = useState("Todos");
   const [query, setQuery] = useState("");
-  const categories = ["Todos", ...Array.from(new Set(canales.map((canal) => canal.categoria)))];
+  const categories = ["Todos", ...categorias.filter((item) => canales.some((canal) => canal.categoria === item)), ...Array.from(new Set(canales.map((canal) => canal.categoria))).filter((item) => !categorias.includes(item))];
   const text = query.trim().toLowerCase();
   const visible = [...canales].sort((a, b) => a.numero - b.numero).filter((canal) => (category === "Todos" || canal.categoria === category) && (!text || canal.nombre.toLowerCase().includes(text) || String(canal.numero) === text));
-  const initials = (name: string) => name.split(/\s+/).filter((word) => /^[A-ZÁÉÍÓÚÑ0-9]/.test(word)).slice(0, 2).map((word) => word[0]).join("");
+  const initials = (name: string) => {
+    const words = name.split(/\s+/).filter((word) => /^[A-ZÁÉÍÓÚÑ0-9]/i.test(word));
+    if (words.length > 1) return words.slice(0, 2).map((word) => word[0]).join("").toUpperCase();
+    return /^[A-Z0-9]{2,4}$/.test(name) ? name : name.slice(0, 2).toUpperCase();
+  };
   return <><PageIntro eyebrow="Servicio de parabólica" title="Canales" tone="cyan">Estos son los canales que recibes con el servicio de televisión de Conecta Digital.</PageIntro><section className="section"><div className="container"><div className="channel-tools"><div className="tabs" role="tablist">{categories.map((item) => <button role="tab" aria-selected={item === category} className={item === category ? "active" : ""} onClick={() => setCategory(item)} key={item}>{item}</button>)}</div><label className="search"><Icon name="search" /><input placeholder="Buscar por nombre o número" value={query} onChange={(e) => setQuery(e.target.value)} /></label></div>{visible.length ? <div className="channel-grid">{visible.map((canal) => <article className="channel-card" key={canal.numero}><span className="channel-number">{canal.numero}</span><div className="channel-logo">{canal.logo ? <img src={canal.logo} alt="" loading="lazy" /> : <span>{initials(canal.nombre)}</span>}</div><div><Text as="h3">{canal.nombre}</Text><Text>{canal.categoria}</Text></div></article>)}</div> : <Text>No encontramos canales con esa búsqueda.</Text>}</div></section></>;
 }
 
