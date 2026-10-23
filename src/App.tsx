@@ -53,6 +53,17 @@ function Eyebrow({ children }: { children: ReactNode }) {
   return <Text className="eyebrow">{children}</Text>;
 }
 
+// Hora de Colombia para la franja del canal, como el reloj de una señal de TV.
+function Reloj() {
+  const formato = () => new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", hour: "2-digit", minute: "2-digit", hour12: false }).format(new Date());
+  const [hora, setHora] = useState(formato);
+  useEffect(() => {
+    const timer = window.setInterval(() => setHora(formato()), 15000);
+    return () => window.clearInterval(timer);
+  }, []);
+  return <span className="station-clock"><time>{hora}</time> COT</span>;
+}
+
 function Header({ path }: { path: string }) {
   const [open, setOpen] = useState(false);
   const envivo = useEnVivo();
@@ -60,6 +71,7 @@ function Header({ path }: { path: string }) {
   const items = [["Inicio", "/"], ...(envivo ? [["En vivo", "/en-vivo"]] : []), ["Programación", "/programacion"], ["Programas", "/programas"], ["Canales", "/canales"], ["PQRS", "/pqrs"]];
   return (
     <header className="site-header">
+      <div className="station-bar" data-theme="dark"><div className="container station-inner"><span>Canal 8 · Conecta</span><span className="station-place">El Retiro, Antioquia · 6°03′N 75°30′O · 2.175 m</span><Reloj /></div></div>
       <div className="container header-inner">
         <AppLink href="/" className="brand-link" onClick={() => setOpen(false)}><Logo /></AppLink>
         <nav className={`main-nav${open ? " is-open" : ""}`} aria-label="Navegación principal">
@@ -82,6 +94,7 @@ function Footer() {
         <div><Text as="h3">Atención al ciudadano</Text><AppLink href="/pqrs">Radicar PQRS</AppLink><AppLink href="/programacion">Programación</AppLink><AppLink href="/politica-de-datos">Política de datos</AppLink></div>
         <div><Text as="h3">Síguenos</Text><a href={canal.redes.facebook} target="_blank" rel="noopener noreferrer">Facebook</a><a href={canal.redes.instagram} target="_blank" rel="noopener noreferrer">Instagram</a><a href={canal.redes.youtube} target="_blank" rel="noopener noreferrer">YouTube</a></div>
       </div>
+      <div className="container footer-sign"><span aria-hidden="true" className="footer-dots"><i /><i /><i /><i /></span><Text>Hecho en El Retiro, Antioquia.</Text></div>
       <div className="container footer-bottom"><Text>© 2026 {canal.razonSocial} · NIT {canal.nit}</Text><AppLink href="/admin"><Icon name="lock" /> Ingreso del equipo</AppLink></div>
     </footer>
   );
@@ -91,8 +104,10 @@ function LiveVideo({ envivo, large = false }: { envivo: NonNullable<EnVivo>; lar
   return <div className={`video-shell video-shell--player${large ? " video-shell--large" : ""}`}><iframe src={enlaceEmbebido(envivo.video)} title={envivo.titulo} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen /><span className="live-badge"><i /> En vivo</span></div>;
 }
 
-function ProgramVisual({ color, compact = false }: { color: string; compact?: boolean }) {
-  return <div className={`program-visual visual--${color}${compact ? " compact" : ""}`}><Logo compact /><span>Producción propia</span></div>;
+// Mientras no hay fotos, cada programa se presenta con su día y hora al aire.
+function ProgramVisual({ programa, numero, compact = false }: { programa: (typeof programas)[number]; numero: number; compact?: boolean }) {
+  const [dia, ...hora] = programa.horario.split(" ");
+  return <div className={`program-visual visual--${programa.color}${compact ? " compact" : ""}`}><span className="pv-number">{String(numero).padStart(2, "0")} / {String(programas.length).padStart(2, "0")}</span><strong className="pv-day">{dia}</strong><span className="pv-time">{hora.join(" ")}</span></div>;
 }
 
 function Home() {
@@ -135,7 +150,7 @@ function Home() {
             onTouchCancel={() => setTouchStart(null)}
           >
             <Button variant="secondary" className="carousel-arrow carousel-arrow--previous" onClick={previousSlide}><span aria-hidden="true">←</span><span className="sr-only">Programa anterior</span></Button>
-            <article className="featured-program" key={current.nombre}><ProgramVisual color={current.color} /><div className="featured-copy"><Eyebrow>{current.categoria}</Eyebrow><Text as="h3">{current.nombre}</Text><Text>{current.descripcion}</Text><Text className="schedule"><Icon name="clock" /> {current.horario}</Text><AppLink href="/programacion" className="text-link">Ver en la programación <Icon name="arrow" /></AppLink></div></article>
+            <article className="featured-program" key={current.nombre}><ProgramVisual programa={current} numero={slide + 1} /><div className="featured-copy"><Eyebrow>{current.categoria}</Eyebrow><Text as="h3">{current.nombre}</Text><Text>{current.descripcion}</Text><Text className="schedule"><Icon name="clock" /> {current.horario}</Text><AppLink href="/programacion" className="text-link">Ver en la programación <Icon name="arrow" /></AppLink></div></article>
             <Button variant="secondary" className="carousel-arrow carousel-arrow--next" onClick={nextSlide}><span aria-hidden="true">→</span><span className="sr-only">Programa siguiente</span></Button>
           </div>
           <div className="progress-bars">{programas.map((p, index) => <button key={p.nombre} className={index === slide ? "active" : ""} onClick={() => setSlide(index)} aria-label={`Ver ${p.nombre}`} />)}</div>
@@ -160,7 +175,7 @@ function Programming() {
 }
 
 function Programs() {
-  return <><PageIntro eyebrow="Producción propia" title="Programas" tone="orange">Historias, información y conversaciones hechas desde El Retiro.</PageIntro><section className="section"><div className="container program-grid">{programas.map((program) => <article className="program-card" key={program.nombre}><ProgramVisual color={program.color} compact /><div><Eyebrow>{program.categoria}</Eyebrow><Text as="h2">{program.nombre}</Text><Text>{program.descripcion}</Text><Text className="schedule"><Icon name="clock" /> {program.horario}</Text></div></article>)}</div></section></>;
+  return <><PageIntro eyebrow="Producción propia" title="Programas" tone="orange">Historias, información y conversaciones hechas desde El Retiro.</PageIntro><section className="section"><div className="container program-grid">{programas.map((program, index) => <article className="program-card" key={program.nombre}><ProgramVisual programa={program} numero={index + 1} compact /><div><Eyebrow>{program.categoria}</Eyebrow><Text as="h2">{program.nombre}</Text><Text>{program.descripcion}</Text><Text className="schedule"><Icon name="clock" /> {program.horario}</Text></div></article>)}</div></section></>;
 }
 
 function Channels() {
