@@ -10,16 +10,17 @@ export type Canal = {
 
 // Parrilla de Conecta Digital (PDF "PARRILLA TV CONECTA 2026", 72 canales, recibido 2026-10-23).
 // Las categorías no venían en el PDF: las asignó Claude y se pueden cambiar aquí.
-// Logos en public/canales/, tomados del repositorio público github.com/tv-logo/tv-logos (2026-10-23).
+// Logos en public/canales/, tomados del repositorio público github.com/tv-logo/tv-logos (2026-10-23)
+// y los que envió Tomás el mismo día (2, 6, 7, 42, 46, 48, 49, 53, 66, 67, 72).
 // Los canales sin logo muestran sus iniciales; para agregar uno, pon el PNG en public/canales/ y su ruta en "logo".
 export const canales: Canal[] = [
   { numero: 1, nombre: "Canal Institucional", categoria: "Nacional" },
-  { numero: 2, nombre: "Win Sports", categoria: "Deportes" },
+  { numero: 2, nombre: "Win Sports", categoria: "Deportes", logo: "/canales/2-win-sports.png" },
   { numero: 3, nombre: "Señal Colombia", categoria: "Nacional" },
   { numero: 4, nombre: "Canal 1", categoria: "Nacional" },
   { numero: 5, nombre: "Teleantioquia", categoria: "Regional" },
-  { numero: 6, nombre: "Telemedellín", categoria: "Regional" },
-  { numero: 7, nombre: "Caracol", categoria: "Nacional" },
+  { numero: 6, nombre: "Telemedellín", categoria: "Regional", logo: "/canales/6-telemedellin.png" },
+  { numero: 7, nombre: "Caracol", categoria: "Nacional", logo: "/canales/7-caracol.png", logoOscuro: true },
   { numero: 8, nombre: "Conecta", categoria: "Local" },
   { numero: 9, nombre: "RCN", categoria: "Nacional" },
   { numero: 10, nombre: "Disney", categoria: "Infantil", logo: "/canales/10-disney.png" },
@@ -54,18 +55,18 @@ export const canales: Canal[] = [
   { numero: 39, nombre: "Cine Hispano HD", categoria: "Películas y series" },
   { numero: 40, nombre: "TNT Series", categoria: "Películas y series", logo: "/canales/40-tnt-series.png" },
   { numero: 41, nombre: "Cine Familiar HD", categoria: "Películas y series" },
-  { numero: 42, nombre: "NTN24", categoria: "Noticias" },
+  { numero: 42, nombre: "NTN24", categoria: "Noticias", logo: "/canales/42-ntn24.png" },
   { numero: 43, nombre: "Cable Noticias", categoria: "Noticias" },
   { numero: 44, nombre: "DW", categoria: "Noticias", logo: "/canales/44-dw.png" },
   { numero: 45, nombre: "RT", categoria: "Noticias", logo: "/canales/45-rt.png" },
-  { numero: 46, nombre: "Telesur", categoria: "Noticias" },
+  { numero: 46, nombre: "Telesur", categoria: "Noticias", logo: "/canales/46-telesur.png" },
   { numero: 47, nombre: "CNN", categoria: "Noticias", logo: "/canales/47-cnn.png" },
-  { numero: 48, nombre: "Canal Trece", categoria: "Regional" },
-  { numero: 49, nombre: "Canal TRO", categoria: "Regional" },
+  { numero: 48, nombre: "Canal Trece", categoria: "Regional", logo: "/canales/48-canal-trece.png", logoOscuro: true },
+  { numero: 49, nombre: "Canal TRO", categoria: "Regional", logo: "/canales/49-canal-tro.png" },
   { numero: 50, nombre: "Telepacífico", categoria: "Regional" },
   { numero: 51, nombre: "Telecaribe", categoria: "Regional" },
   { numero: 52, nombre: "Telecafé", categoria: "Regional" },
-  { numero: 53, nombre: "Teleislas", categoria: "Regional" },
+  { numero: 53, nombre: "Teleislas", categoria: "Regional", logo: "/canales/53-teleislas.png" },
   { numero: 54, nombre: "TV Agro HD", categoria: "Variedades" },
   { numero: 55, nombre: "City TV", categoria: "Variedades" },
   { numero: 56, nombre: "Zoom", categoria: "Variedades" },
@@ -78,13 +79,13 @@ export const canales: Canal[] = [
   { numero: 63, nombre: "Televid", categoria: "Religiosos" },
   { numero: 64, nombre: "Cristovisión", categoria: "Religiosos" },
   { numero: 65, nombre: "HTV", categoria: "Música", logo: "/canales/65-htv.png" },
-  { numero: 66, nombre: "La Kalle", categoria: "Música" },
-  { numero: 67, nombre: "Rumba TV", categoria: "Música" },
+  { numero: 66, nombre: "La Kalle", categoria: "Música", logo: "/canales/66-la-kalle.png" },
+  { numero: 67, nombre: "Rumba TV", categoria: "Música", logo: "/canales/67-rumba-tv.png", logoOscuro: true },
   { numero: 68, nombre: "Mi Música Popular", categoria: "Música" },
   { numero: 69, nombre: "Mi Música Salsa", categoria: "Música" },
   { numero: 70, nombre: "Mi Música Regional", categoria: "Música" },
   { numero: 71, nombre: "Mi Música Reggaetón", categoria: "Música" },
-  { numero: 72, nombre: "Telenostalgia", categoria: "Música" },
+  { numero: 72, nombre: "Telenostalgia", categoria: "Música", logo: "/canales/72-telenostalgia.png", logoOscuro: true },
 ];
 
 /** Orden de las pestañas de la página Canales. */
