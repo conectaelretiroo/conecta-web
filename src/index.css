@@ -391,6 +391,7 @@ main > section:nth-child(2) { animation: sectionEnter 560ms 80ms cubic-bezier(0.
 .trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
 .form-error, .form-notice { margin: 0; padding: 0.75rem 1rem; border-radius: var(--radius-s); font-size: 0.875rem; }
 .form-error { color: #8f1d1d; background: #fdeeee; border: 0.0625rem solid #f2c4c4; }
+.captcha { min-height: 4.0625rem; }
 .form-notice { color: var(--teal); background: var(--teal-soft); border: 0.0625rem solid color-mix(in srgb, var(--teal) 25%, var(--border)); }
 .admin-actions + .form-notice, .admin-actions ~ .form-error { margin-bottom: 1.5rem; }
 .admin-session { display: grid; justify-items: end; gap: 0.5rem; color: var(--muted); }
