@@ -11,18 +11,18 @@ export type Canal = {
 // Parrilla de Conecta Digital (PDF "PARRILLA TV CONECTA 2026", 72 canales, recibido 2026-10-23).
 // Las categorías no venían en el PDF: las asignó Claude y se pueden cambiar aquí.
 // Logos en public/canales/, tomados del repositorio público github.com/tv-logo/tv-logos (2026-10-23)
-// y los que envió Tomás el mismo día (2, 6, 7, 42, 46, 48, 49, 53, 66, 67, 72).
+// y los que envió Tomás el mismo día (1-7, 9, 27, 28, 37, 41, 42, 46, 48, 49, 53, 66, 67, 72).
 // Los canales sin logo muestran sus iniciales; para agregar uno, pon el PNG en public/canales/ y su ruta en "logo".
 export const canales: Canal[] = [
-  { numero: 1, nombre: "Canal Institucional", categoria: "Nacional" },
+  { numero: 1, nombre: "Canal Institucional", categoria: "Nacional", logo: "/canales/1-canal-institucional.png" },
   { numero: 2, nombre: "Win Sports", categoria: "Deportes", logo: "/canales/2-win-sports.png" },
-  { numero: 3, nombre: "Señal Colombia", categoria: "Nacional" },
-  { numero: 4, nombre: "Canal 1", categoria: "Nacional" },
-  { numero: 5, nombre: "Teleantioquia", categoria: "Regional" },
+  { numero: 3, nombre: "Señal Colombia", categoria: "Nacional", logo: "/canales/3-senal-colombia.png" },
+  { numero: 4, nombre: "Canal 1", categoria: "Nacional", logo: "/canales/4-canal-1.png" },
+  { numero: 5, nombre: "Teleantioquia", categoria: "Regional", logo: "/canales/5-teleantioquia.png" },
   { numero: 6, nombre: "Telemedellín", categoria: "Regional", logo: "/canales/6-telemedellin.png" },
   { numero: 7, nombre: "Caracol", categoria: "Nacional", logo: "/canales/7-caracol.png", logoOscuro: true },
   { numero: 8, nombre: "Conecta", categoria: "Local" },
-  { numero: 9, nombre: "RCN", categoria: "Nacional" },
+  { numero: 9, nombre: "RCN", categoria: "Nacional", logo: "/canales/9-rcn.png" },
   { numero: 10, nombre: "Disney", categoria: "Infantil", logo: "/canales/10-disney.png" },
   { numero: 11, nombre: "Disney Junior", categoria: "Infantil", logo: "/canales/11-disney-junior.png" },
   { numero: 12, nombre: "Baby TV", categoria: "Infantil", logo: "/canales/12-baby-tv.png" },
@@ -40,8 +40,8 @@ export const canales: Canal[] = [
   { numero: 24, nombre: "Discovery Turbo", categoria: "Documentales y estilo de vida", logo: "/canales/24-discovery-turbo.png" },
   { numero: 25, nombre: "Discovery Channel", categoria: "Documentales y estilo de vida", logo: "/canales/25-discovery-channel.png", logoOscuro: true },
   { numero: 26, nombre: "Discovery H&H", categoria: "Documentales y estilo de vida", logo: "/canales/26-discovery-h-h.png" },
-  { numero: 27, nombre: "Discovery Food", categoria: "Documentales y estilo de vida" },
-  { numero: 28, nombre: "Nat Geo Food", categoria: "Documentales y estilo de vida" },
+  { numero: 27, nombre: "Discovery Food", categoria: "Documentales y estilo de vida", logo: "/canales/27-discovery-food.png", logoOscuro: true },
+  { numero: 28, nombre: "Nat Geo Food", categoria: "Documentales y estilo de vida", logo: "/canales/28-nat-geo-food.png" },
   { numero: 29, nombre: "TLC", categoria: "Documentales y estilo de vida", logo: "/canales/29-tlc.png" },
   { numero: 30, nombre: "Animal Planet", categoria: "Documentales y estilo de vida", logo: "/canales/30-animal-planet.png" },
   { numero: 31, nombre: "Star Channel", categoria: "Películas y series", logo: "/canales/31-star-channel.png", logoOscuro: true },
@@ -50,11 +50,11 @@ export const canales: Canal[] = [
   { numero: 34, nombre: "FX Colombia", categoria: "Películas y series", logo: "/canales/34-fx-colombia.png", logoOscuro: true },
   { numero: 35, nombre: "TNT", categoria: "Películas y series", logo: "/canales/35-tnt.png", logoOscuro: true },
   { numero: 36, nombre: "Space", categoria: "Películas y series", logo: "/canales/36-space.png" },
-  { numero: 37, nombre: "DHE", categoria: "Películas y series" },
+  { numero: 37, nombre: "DHE", categoria: "Películas y series", logo: "/canales/37-dhe.png" },
   { numero: 38, nombre: "Cine Premium HD", categoria: "Películas y series" },
   { numero: 39, nombre: "Cine Hispano HD", categoria: "Películas y series" },
   { numero: 40, nombre: "TNT Series", categoria: "Películas y series", logo: "/canales/40-tnt-series.png" },
-  { numero: 41, nombre: "Cine Familiar HD", categoria: "Películas y series" },
+  { numero: 41, nombre: "Cine Familiar HD", categoria: "Películas y series", logo: "/canales/41-cine-familiar.png" },
   { numero: 42, nombre: "NTN24", categoria: "Noticias", logo: "/canales/42-ntn24.png" },
   { numero: 43, nombre: "Cable Noticias", categoria: "Noticias" },
   { numero: 44, nombre: "DW", categoria: "Noticias", logo: "/canales/44-dw.png" },
