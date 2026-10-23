@@ -12,6 +12,8 @@
  *                     traer la verificación "no soy un robot" del formulario.
  *   YOUTUBE_API_KEY   Llave de la API de datos de YouTube. Con ella el panel activa la
  *                     transmisión en vivo y la página la quita sola cuando termina.
+ *
+ * En la hoja, el menú PQRS → "Reporte entre fechas…" llena la pestaña Reporte.
  */
 
 const HOJA_PQRS = 'PQRS';
@@ -401,6 +403,101 @@ function consultarYoutube_(video) {
   const snippet = items[0].snippet;
   // "live" = al aire, "upcoming" = programado, "none" = terminó o no es un en vivo.
   return { existe: true, activo: snippet.liveBroadcastContent !== 'none', titulo: snippet.title };
+}
+
+// ---------- Reportes por fechas (menú de la hoja) ----------
+
+const HOJA_REPORTE = 'Reporte';
+
+/** Al abrir la hoja aparece el menú "PQRS" con el reporte entre fechas. */
+function onOpen() {
+  SpreadsheetApp.getUi().createMenu('PQRS')
+    .addItem('Reporte entre fechas…', 'abrirReporte')
+    .addToUi();
+}
+
+function abrirReporte() {
+  const hoy = Utilities.formatDate(new Date(), ZONA, 'yyyy-MM-dd');
+  const inicioMes = hoy.slice(0, 8) + '01';
+  const html = HtmlService.createHtmlOutput([
+    '<style>body{font-family:Arial,sans-serif;font-size:14px;margin:0}label{display:block;margin:0 0 12px}',
+    'input{display:block;margin-top:4px;padding:6px;font-size:14px;width:100%;box-sizing:border-box}',
+    'button{padding:8px 16px;font-size:14px;background:#115c57;color:#fff;border:0;border-radius:4px;cursor:pointer}',
+    'button:disabled{opacity:.6}#aviso{color:#8f1d1d;margin-top:10px}</style>',
+    '<label>Desde<input type="date" id="desde" value="' + inicioMes + '"></label>',
+    '<label>Hasta<input type="date" id="hasta" value="' + hoy + '"></label>',
+    '<button id="crear" onclick="crear()">Crear reporte</button><div id="aviso"></div>',
+    '<script>function crear(){var d=document.getElementById("desde").value,h=document.getElementById("hasta").value,',
+    'a=document.getElementById("aviso"),b=document.getElementById("crear");',
+    'if(!d||!h){a.textContent="Elige las dos fechas.";return}if(d>h){a.textContent="La fecha inicial va antes de la final.";return}',
+    'b.disabled=true;b.textContent="Creando…";',
+    'google.script.run.withSuccessHandler(function(){google.script.host.close()})',
+    '.withFailureHandler(function(e){a.textContent=e.message;b.disabled=false;b.textContent="Crear reporte"}).crearReporte(d,h)}</script>',
+  ].join('')).setWidth(320).setHeight(230);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Reporte de PQRS');
+}
+
+/**
+ * Llena la pestaña "Reporte" con las PQRS radicadas entre dos fechas (incluidas):
+ * resumen por tipo y por estado, y la lista completa. La pestaña PQRS no se toca.
+ * Recibe fechas "aaaa-mm-dd" desde el cuadro del menú.
+ */
+function crearReporte(desde, hasta) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(desde) || !/^\d{4}-\d{2}-\d{2}$/.test(hasta)) throw new Error('Fechas no válidas.');
+  const inicio = Utilities.parseDate(desde + ' 00:00:00', ZONA, 'yyyy-MM-dd HH:mm:ss');
+  const fin = Utilities.parseDate(hasta + ' 23:59:59', ZONA, 'yyyy-MM-dd HH:mm:ss');
+  if (inicio > fin) throw new Error('La fecha inicial va antes de la final.');
+
+  const hoja = hoja_(HOJA_PQRS);
+  const filas = hoja.getLastRow() < 2 ? [] : hoja.getRange(2, 1, hoja.getLastRow() - 1, COLUMNAS.length).getValues()
+    .filter((f) => f[COL['Fecha']] instanceof Date && f[COL['Fecha']] >= inicio && f[COL['Fecha']] <= fin)
+    .sort((a, b) => a[COL['Fecha']] - b[COL['Fecha']]);
+
+  const contar = (columna, valores) => valores.map((v) => [v, filas.filter((f) => f[COL[columna]] === v).length]);
+  const dia = (fecha) => Utilities.formatDate(fecha, ZONA, 'dd/MM/yyyy');
+
+  const libro = SpreadsheetApp.getActive();
+  const reporte = libro.getSheetByName(HOJA_REPORTE) || libro.insertSheet(HOJA_REPORTE);
+  reporte.clear();
+
+  const bloques = [
+    [['Reporte de PQRS del ' + dia(inicio) + ' al ' + dia(fin)]],
+    [['Creado el ' + Utilities.formatDate(new Date(), ZONA, "dd/MM/yyyy 'a las' HH:mm")]],
+    [['']],
+    [['Total de solicitudes', filas.length]],
+    [['']],
+    [['Por tipo', 'Cantidad']].concat(contar('Tipo', TIPOS)),
+    [['']],
+    [['Por estado', 'Cantidad']].concat(contar('Estado', ESTADOS)),
+    [['']],
+  ];
+  let fila = 1;
+  const negrita = [];
+  bloques.forEach((bloque, i) => {
+    bloque.forEach((valores) => {
+      reporte.getRange(fila, 1, 1, valores.length).setValues([valores]);
+      fila++;
+    });
+    if (i === 0 || i === 3 || i === 5 || i === 7) negrita.push(fila - bloque.length);
+  });
+  negrita.forEach((n) => reporte.getRange(n, 1, 1, 2).setFontWeight('bold'));
+  reporte.getRange(1, 1).setFontSize(14);
+  reporte.getRange(2, 1).setFontColor('#686a60');
+
+  reporte.getRange(fila, 1, 1, COLUMNAS.length).setValues([COLUMNAS]).setFontWeight('bold').setBackground('#eef6f5');
+  const inicioLista = fila + 1;
+  if (filas.length) {
+    // Los textos que empiezan con = + - @ se guardan como texto, igual que en la pestaña PQRS.
+    const lista = filas.map((f) => f.map((v) => (typeof v === 'string' ? seguro_(v) : v)));
+    reporte.getRange(inicioLista, 1, lista.length, COLUMNAS.length).setValues(lista);
+    [COL['Fecha'], COL['Actualizado']].forEach((c) => {
+      reporte.getRange(inicioLista, c + 1, lista.length, 1).setNumberFormat('dd/mm/yyyy hh:mm');
+    });
+  } else {
+    reporte.getRange(inicioLista, 1).setValue('No hay PQRS radicadas en esas fechas.');
+  }
+  reporte.setColumnWidth(1, 170);
+  libro.setActiveSheet(reporte);
 }
 
 // ---------- Utilidades ----------

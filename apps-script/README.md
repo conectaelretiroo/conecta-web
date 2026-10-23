@@ -91,3 +91,12 @@ Este cambio usa Gmail en vez de MailApp, así que al actualizar el script:
 1. Pega `Code.gs` y también `appsscript.json` (nuevo permiso de Gmail).
 2. En el editor elige la función **autorizar** y dale **Ejecutar**. Acepta los permisos con la cuenta del canal. En el registro debe aparecer `contacto@conectaelretiro.tv`.
 3. Crea una **Nueva versión** de la implementación.
+
+## Reportes entre fechas
+
+En la hoja aparece el menú **PQRS → Reporte entre fechas…**. Eliges desde y hasta, y la pestaña **Reporte** se llena con el total, el conteo por tipo y por estado, y la lista de las PQRS radicadas en esas fechas (ambas incluidas). La pestaña PQRS no se modifica. Para guardarlo: **Archivo → Descargar** (Excel o PDF) con la pestaña Reporte abierta.
+
+Para activarlo:
+1. Pega el `Code.gs` y el `appsscript.json` nuevos y guarda.
+2. Elige **autorizar** y toca **Ejecutar**; acepta el permiso nuevo ("mostrar contenido en aplicaciones de Google").
+3. Recarga la hoja: el menú **PQRS** aparece junto a Ayuda.
