@@ -3,9 +3,64 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Conecta Telecomunicaciones · El Retiro, Antioquia</title>
-    <meta name="description" content="Canal local de El Retiro, Antioquia: en vivo, programación, programas propios y atención al ciudadano (PQRS)." />
+    <title>Conecta El Retiro · Canal de televisión de El Retiro, Antioquia</title>
+    <meta name="description" content="Conecta Telecomunicaciones, el canal local de El Retiro, Antioquia: en vivo, programación, programas propios, canales de televisión e internet, y PQRS." />
+    <link rel="canonical" href="https://conectaelretiro.tv/" />
+    <!-- Solo el dominio propio sale en Google; workers.dev y la copia de pruebas no. -->
+    <script>if (location.hostname !== "conectaelretiro.tv") document.write('<meta name="robots" content="noindex, nofollow" />');</script>
     <link rel="icon" href="/assets/logo-conecta.png" />
+    <meta name="theme-color" content="#1e1f19" />
+    <!-- Vista previa al compartir el enlace (WhatsApp, Facebook…). -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Conecta El Retiro" />
+    <meta property="og:locale" content="es_CO" />
+    <meta property="og:title" content="Conecta El Retiro · Canal de televisión de El Retiro, Antioquia" />
+    <meta property="og:description" content="El canal local de El Retiro, Antioquia: en vivo, programación, programas propios, canales e internet." />
+    <meta property="og:url" content="https://conectaelretiro.tv/" />
+    <meta property="og:image" content="https://conectaelretiro.tv/assets/logo-conecta.png" />
+    <meta name="twitter:card" content="summary" />
+    <!-- Datos del canal para Google (nombre, dirección, teléfonos, redes). -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://conectaelretiro.tv/#sitio",
+            "name": "Conecta El Retiro",
+            "alternateName": ["Conecta Telecomunicaciones", "Conecta"],
+            "url": "https://conectaelretiro.tv/",
+            "inLanguage": "es-CO",
+            "publisher": { "@id": "https://conectaelretiro.tv/#canal" }
+          },
+          {
+            "@type": "TelevisionStation",
+            "@id": "https://conectaelretiro.tv/#canal",
+            "name": "Conecta Telecomunicaciones",
+            "alternateName": "Conecta El Retiro",
+            "slogan": "La señal de nuestro pueblo",
+            "url": "https://conectaelretiro.tv/",
+            "logo": "https://conectaelretiro.tv/assets/logo-conecta.png",
+            "image": "https://conectaelretiro.tv/assets/logo-conecta.png",
+            "email": "contacto@conectaelretiro.tv",
+            "telephone": ["+57 604 5413066", "+57 323 2869963"],
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Cra. 20 #22-25",
+              "addressLocality": "El Retiro",
+              "addressRegion": "Antioquia",
+              "addressCountry": "CO"
+            },
+            "areaServed": { "@type": "City", "name": "El Retiro, Antioquia" },
+            "sameAs": [
+              "https://www.facebook.com/share/1H6q1Nzvwk/",
+              "https://www.instagram.com/conectaelretiro/",
+              "https://www.youtube.com/@conectaelretiro"
+            ]
+          }
+        ]
+      }
+    </script>
     <style>
       /* Pantalla de carga: va en el HTML para verse antes de que cargue la página. */
       #cargando { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 1.5rem; background: #1e1f19; transition: opacity 450ms ease, visibility 450ms ease; animation: cargando-seguro 400ms ease 10s forwards; }
