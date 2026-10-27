@@ -5,8 +5,18 @@ export type Estado = "Radicada" | "En trámite" | "Respondida" | "Cerrada";
 
 export const estados: Estado[] = ["Radicada", "En trámite", "Respondida", "Cerrada"];
 
+// Cada servicio se guarda en su propia pestaña de la hoja.
+export type Servicio = "Internet" | "Parabólica" | "Canal";
+
+export const servicios: { valor: Servicio; titulo: string; texto: string }[] = [
+  { valor: "Internet", titulo: "Internet", texto: "Servicio de internet de Conecta" },
+  { valor: "Parabólica", titulo: "Televisión", texto: "Servicio de parabólica" },
+  { valor: "Canal", titulo: "Canal", texto: "Programación y contenidos del canal" },
+];
+
 export type Solicitud = {
   radicado: string;
+  servicio?: Servicio;
   fecha: string;
   tipo: string;
   nombre: string;
@@ -22,6 +32,7 @@ export type Solicitud = {
 };
 
 export type NuevaSolicitud = {
+  servicio: Servicio;
   tipo: string;
   nombre: string;
   correo: string;
@@ -105,9 +116,9 @@ export async function actualizarPQRS(token: string, cambios: { radicado: string;
 
 const espera = (ms = 350) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const ejemplo = { telefono: "", ubicacion: "Centro", respuesta: "", responsable: "" };
+const ejemplo = { servicio: "Canal" as Servicio, telefono: "", ubicacion: "Centro", respuesta: "", responsable: "" };
 const muestra: Solicitud[] = [
   { ...ejemplo, radicado: "PQRS-2026-000124", tipo: "Petición", asunto: "Cubrimiento de evento comunitario", descripcion: "Queremos invitar al canal a cubrir el festival de la vereda.", nombre: "María Restrepo", correo: "maria@ejemplo.com", fecha: "2026-03-18T09:12:00", actualizado: "2026-03-18T09:12:00", estado: "Radicada" },
-  { ...ejemplo, radicado: "PQRS-2026-000123", tipo: "Sugerencia", asunto: "Nuevo espacio cultural", descripcion: "Propongo un programa con los grupos de música del municipio.", nombre: "Carlos Gómez", correo: "carlos@ejemplo.com", fecha: "2026-03-17T16:40:00", actualizado: "2026-03-17T18:02:00", estado: "En trámite" },
+  { ...ejemplo, servicio: "Internet", radicado: "PQRS-2026-000123", tipo: "Reclamo", asunto: "Nuevo espacio cultural", descripcion: "Propongo un programa con los grupos de música del municipio.", nombre: "Carlos Gómez", correo: "carlos@ejemplo.com", fecha: "2026-03-17T16:40:00", actualizado: "2026-03-17T18:02:00", estado: "En trámite" },
   { ...ejemplo, radicado: "PQRS-2026-000122", tipo: "Felicitación", asunto: "Programa Nuestro Campo", descripcion: "Felicitaciones por el último capítulo.", nombre: "Ana López", correo: "ana@ejemplo.com", fecha: "2026-03-16T11:05:00", actualizado: "2026-03-16T15:30:00", estado: "Respondida", respuesta: "¡Gracias, Ana! Se lo contamos al equipo." },
 ];

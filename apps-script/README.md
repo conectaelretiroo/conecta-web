@@ -92,9 +92,13 @@ Este cambio usa Gmail en vez de MailApp, así que al actualizar el script:
 2. En el editor elige la función **autorizar** y dale **Ejecutar**. Acepta los permisos con la cuenta del canal. En el registro debe aparecer `contacto@conectaelretiro.tv`.
 3. Crea una **Nueva versión** de la implementación.
 
+## Un servicio por pestaña
+
+El formulario pide el servicio: Internet, Televisión (parabólica) o Canal. Cada uno se guarda en su pestaña: **PQRS Internet**, **PQRS Parabólica** y **PQRS Canal**. La primera vez que el script nuevo se usa, la pestaña **PQRS** de antes se renombra a **PQRS Canal** (todo lo anterior era del canal) y se crean las otras dos. El radicado sigue siendo un solo consecutivo para las tres. Si una solicitud llega sin servicio, queda en Canal.
+
 ## Reportes entre fechas
 
-En la hoja aparece el menú **PQRS → Reporte entre fechas…**. Eliges desde y hasta, y la pestaña **Reporte** se llena con el total, el conteo por tipo y por estado, y la lista de las PQRS radicadas en esas fechas (ambas incluidas). La pestaña PQRS no se modifica. Para guardarlo: **Archivo → Descargar** (Excel o PDF) con la pestaña Reporte abierta.
+En la hoja aparece el menú **PQRS → Reporte entre fechas…**. Eliges desde y hasta, y la pestaña **Reporte** se llena con las tres pestañas juntas: el total, cuántas por servicio, cuántas por tipo y por estado (desglosadas por servicio) y la lista de las PQRS radicadas en esas fechas (ambas incluidas). Las pestañas de PQRS no se modifican. Para guardarlo: **Archivo → Descargar** (Excel o PDF) con la pestaña Reporte abierta.
 
 Para activarlo:
 1. Pega el `Code.gs` y el `appsscript.json` nuevos y guarda.

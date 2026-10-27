@@ -13,10 +13,16 @@
  *   YOUTUBE_API_KEY   Llave de la API de datos de YouTube. Con ella el panel activa la
  *                     transmisión en vivo y la página la quita sola cuando termina.
  *
- * En la hoja, el menú PQRS → "Reporte entre fechas…" llena la pestaña Reporte.
+ * Las PQRS se guardan en una pestaña por servicio: PQRS Internet, PQRS Parabólica y PQRS Canal.
+ * En la hoja, el menú PQRS → "Reporte entre fechas…" llena la pestaña Reporte con las tres juntas.
  */
 
-const HOJA_PQRS = 'PQRS';
+// Cada servicio tiene su pestaña: "PQRS Internet", "PQRS Parabólica" y "PQRS Canal".
+const SERVICIOS = ['Internet', 'Parabólica', 'Canal'];
+// Las solicitudes que llegan sin servicio (la página anterior al cambio) son del canal.
+const SERVICIO_POR_DEFECTO = 'Canal';
+// Pestaña única de antes; la primera vez que se usa se renombra a "PQRS Canal".
+const HOJA_PQRS_ANTERIOR = 'PQRS';
 const HOJA_HISTORIAL = 'Historial';
 const HOJA_EQUIPO = 'Equipo';
 
@@ -39,11 +45,41 @@ const ZONA = 'America/Bogota';
 /** Ejecutar una sola vez desde el editor: crea las pestañas con sus encabezados. */
 function configurar() {
   const libro = SpreadsheetApp.getActive();
-  crearHoja_(libro, HOJA_PQRS, COLUMNAS);
+  SERVICIOS.forEach(hojaServicio_);
   crearHoja_(libro, HOJA_HISTORIAL, ['Fecha', 'Radicado', 'Acción', 'Detalle', 'Responsable']);
   crearHoja_(libro, HOJA_EQUIPO, ['Correo', 'Nombre', 'Avisos']);
-  const estado = libro.getSheetByName(HOJA_PQRS).getRange(2, COL['Estado'] + 1, 1000, 1);
-  estado.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(ESTADOS, true).build());
+}
+
+function nombreHoja_(servicio) {
+  return 'PQRS ' + servicio;
+}
+
+/** La pestaña de un servicio; si no existe la crea (o renombra la pestaña PQRS de antes, que era del canal). */
+function hojaServicio_(servicio) {
+  const libro = SpreadsheetApp.getActive();
+  const nombre = nombreHoja_(servicio);
+  let hoja = libro.getSheetByName(nombre);
+  if (hoja) return hoja;
+  const anterior = servicio === SERVICIO_POR_DEFECTO && libro.getSheetByName(HOJA_PQRS_ANTERIOR);
+  if (anterior) return anterior.setName(nombre);
+  crearHoja_(libro, nombre, COLUMNAS);
+  hoja = libro.getSheetByName(nombre);
+  hoja.getRange(2, COL['Estado'] + 1, 1000, 1)
+    .setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(ESTADOS, true).build());
+  return hoja;
+}
+
+/** Todas las filas de las tres pestañas, cada una con su servicio. */
+function filasPqrs_() {
+  const filas = [];
+  SERVICIOS.forEach((servicio) => {
+    const hoja = hojaServicio_(servicio);
+    if (hoja.getLastRow() < 2) return;
+    hoja.getRange(2, 1, hoja.getLastRow() - 1, COLUMNAS.length).getValues()
+      .filter((f) => f[COL['Radicado']])
+      .forEach((f) => filas.push({ servicio: servicio, valores: f }));
+  });
+  return filas;
 }
 
 /** Ejecutar desde el editor después de cambiar permisos: pide la autorización y muestra los alias de Gmail. */
@@ -138,6 +174,7 @@ function radicar_(s) {
   if (s.sitio) throw new ErrorPublico('No pudimos procesar la solicitud.');
 
   const solicitud = {
+    servicio: texto_(s.servicio, 20) || SERVICIO_POR_DEFECTO,
     tipo: texto_(s.tipo, 20),
     nombre: texto_(s.nombre, 120),
     correo: texto_(s.correo, 254).toLowerCase(),
@@ -146,6 +183,7 @@ function radicar_(s) {
     asunto: texto_(s.asunto, 150),
     descripcion: texto_(s.descripcion, 4800),
   };
+  if (SERVICIOS.indexOf(solicitud.servicio) < 0) throw new ErrorPublico('Elige el servicio.');
   if (TIPOS.indexOf(solicitud.tipo) < 0) throw new ErrorPublico('Elige el tipo de solicitud.');
   if (!solicitud.nombre || !solicitud.ubicacion || !solicitud.asunto || !solicitud.descripcion) {
     throw new ErrorPublico('Completa todos los campos obligatorios.');
@@ -184,7 +222,7 @@ function radicar_(s) {
     fila[COL['Descripción']] = seguro_(solicitud.descripcion);
     fila[COL['Estado']] = 'Radicada';
     fila[COL['Actualizado']] = ahora;
-    hoja_(HOJA_PQRS).appendRow(fila);
+    hojaServicio_(solicitud.servicio).appendRow(fila);
     historial_(radicado, 'Radicada', 'Solicitud recibida desde el sitio web.', 'Sistema');
   } finally {
     candado.releaseLock();
@@ -196,6 +234,7 @@ function radicar_(s) {
     'Hola, ' + solicitud.nombre + '.',
     '',
     'Recibimos tu ' + solicitud.tipo.toLowerCase() + ' con el número de radicado ' + radicado + '.',
+    'Servicio: ' + solicitud.servicio,
     'Asunto: ' + solicitud.asunto,
     '',
     'Te responderemos a este correo. Guarda el número de radicado para cualquier comunicación con el canal.',
@@ -205,7 +244,8 @@ function radicar_(s) {
 
   const equipo = correosAvisos_();
   if (equipo.length) {
-    correo_(equipo.join(','), 'Nueva PQRS ' + radicado + ': ' + solicitud.asunto, [
+    correo_(equipo.join(','), 'Nueva PQRS ' + radicado + ' (' + solicitud.servicio + '): ' + solicitud.asunto, [
+      'Servicio: ' + solicitud.servicio,
       'Tipo: ' + solicitud.tipo,
       'Ciudadano: ' + solicitud.nombre + ' <' + solicitud.correo + '>',
       'Ubicación: ' + solicitud.ubicacion,
@@ -255,10 +295,10 @@ function verificar_(token) {
 }
 
 function listar_() {
-  const hoja = hoja_(HOJA_PQRS);
-  if (hoja.getLastRow() < 2) return [];
-  const filas = hoja.getRange(2, 1, hoja.getLastRow() - 1, COLUMNAS.length).getValues();
-  return filas.filter((f) => f[COL['Radicado']]).map(aSolicitud_).reverse();
+  // El radicado es consecutivo en las tres pestañas: ordenarlo deja primero las más recientes.
+  return filasPqrs_()
+    .sort((a, b) => String(b.valores[COL['Radicado']]).localeCompare(String(a.valores[COL['Radicado']])))
+    .map((f) => aSolicitud_(f.valores, f.servicio));
 }
 
 function obtener_(radicado) {
@@ -268,7 +308,7 @@ function obtener_(radicado) {
   const historial = hoja.getLastRow() < 2 ? [] : hoja.getRange(2, 1, hoja.getLastRow() - 1, 5).getValues()
     .filter((f) => f[1] === radicado)
     .map((f) => ({ fecha: fecha_(f[0]), accion: f[2], detalle: f[3], responsable: f[4] }));
-  return { solicitud: aSolicitud_(encontrada.valores), historial: historial };
+  return { solicitud: aSolicitud_(encontrada.valores, encontrada.servicio), historial: historial };
 }
 
 function actualizar_(usuario, cambios) {
@@ -302,7 +342,7 @@ function actualizar_(usuario, cambios) {
       historial_(radicado, 'Respuesta enviada', respuesta, usuario.correo);
       enviarRespuesta = true;
     }
-    solicitud = aSolicitud_(fila);
+    solicitud = aSolicitud_(fila, encontrada.servicio);
   } finally {
     candado.releaseLock();
   }
@@ -438,9 +478,9 @@ function abrirReporte() {
 }
 
 /**
- * Llena la pestaña "Reporte" con las PQRS radicadas entre dos fechas (incluidas):
- * resumen por tipo y por estado, y la lista completa. La pestaña PQRS no se toca.
- * Recibe fechas "aaaa-mm-dd" desde el cuadro del menú.
+ * Llena la pestaña "Reporte" con las PQRS radicadas entre dos fechas (incluidas) en los tres
+ * servicios juntos: total, cuántas por servicio, tipo y estado (desglosadas por servicio) y la lista.
+ * Las pestañas de PQRS no se tocan. Recibe fechas "aaaa-mm-dd" desde el cuadro del menú.
  */
 function crearReporte(desde, hasta) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(desde) || !/^\d{4}-\d{2}-\d{2}$/.test(hasta)) throw new Error('Fechas no válidas.');
@@ -448,50 +488,51 @@ function crearReporte(desde, hasta) {
   const fin = Utilities.parseDate(hasta + ' 23:59:59', ZONA, 'yyyy-MM-dd HH:mm:ss');
   if (inicio > fin) throw new Error('La fecha inicial va antes de la final.');
 
-  const hoja = hoja_(HOJA_PQRS);
-  const filas = hoja.getLastRow() < 2 ? [] : hoja.getRange(2, 1, hoja.getLastRow() - 1, COLUMNAS.length).getValues()
-    .filter((f) => f[COL['Fecha']] instanceof Date && f[COL['Fecha']] >= inicio && f[COL['Fecha']] <= fin)
-    .sort((a, b) => a[COL['Fecha']] - b[COL['Fecha']]);
+  const filas = filasPqrs_()
+    .filter((f) => f.valores[COL['Fecha']] instanceof Date && f.valores[COL['Fecha']] >= inicio && f.valores[COL['Fecha']] <= fin)
+    .sort((a, b) => a.valores[COL['Fecha']] - b.valores[COL['Fecha']]);
 
-  const contar = (columna, valores) => valores.map((v) => [v, filas.filter((f) => f[COL[columna]] === v).length]);
+  const cuantas = (servicio, columna, valor) => filas.filter((f) =>
+    (!servicio || f.servicio === servicio) && (!columna || f.valores[COL[columna]] === valor)).length;
+  // Tabla con una fila por valor y una columna por servicio, más el total.
+  const desglose = (columna, valores) => [[columna].concat(SERVICIOS, ['Total'])].concat(
+    valores.map((v) => [v].concat(SERVICIOS.map((s) => cuantas(s, columna, v)), [cuantas(null, columna, v)])));
   const dia = (fecha) => Utilities.formatDate(fecha, ZONA, 'dd/MM/yyyy');
 
   const libro = SpreadsheetApp.getActive();
   const reporte = libro.getSheetByName(HOJA_REPORTE) || libro.insertSheet(HOJA_REPORTE);
   reporte.clear();
 
+  // Cada bloque: filas y si la primera va en negrita (encabezado).
   const bloques = [
-    [['Reporte de PQRS del ' + dia(inicio) + ' al ' + dia(fin)]],
-    [['Creado el ' + Utilities.formatDate(new Date(), ZONA, "dd/MM/yyyy 'a las' HH:mm")]],
-    [['']],
-    [['Total de solicitudes', filas.length]],
-    [['']],
-    [['Por tipo', 'Cantidad']].concat(contar('Tipo', TIPOS)),
-    [['']],
-    [['Por estado', 'Cantidad']].concat(contar('Estado', ESTADOS)),
-    [['']],
+    { filas: [['Reporte de PQRS del ' + dia(inicio) + ' al ' + dia(fin)]], titulo: true },
+    { filas: [['Creado el ' + Utilities.formatDate(new Date(), ZONA, "dd/MM/yyyy 'a las' HH:mm")]] },
+    { filas: [['Total de solicitudes', filas.length]], negrita: true },
+    { filas: [['Servicio', 'Cantidad']].concat(SERVICIOS.map((s) => [s, cuantas(s)])), negrita: true },
+    { filas: desglose('Tipo', TIPOS), negrita: true },
+    { filas: desglose('Estado', ESTADOS), negrita: true },
   ];
   let fila = 1;
-  const negrita = [];
-  bloques.forEach((bloque, i) => {
-    bloque.forEach((valores) => {
-      reporte.getRange(fila, 1, 1, valores.length).setValues([valores]);
+  bloques.forEach((bloque) => {
+    bloque.filas.forEach((valores, i) => {
+      const rango = reporte.getRange(fila, 1, 1, valores.length).setValues([valores]);
+      if (i === 0 && bloque.negrita) rango.setFontWeight('bold').setBackground('#eef6f5');
+      if (bloque.titulo) rango.setFontWeight('bold').setFontSize(14);
       fila++;
     });
-    if (i === 0 || i === 3 || i === 5 || i === 7) negrita.push(fila - bloque.length);
+    if (!bloque.titulo) fila++;
   });
-  negrita.forEach((n) => reporte.getRange(n, 1, 1, 2).setFontWeight('bold'));
-  reporte.getRange(1, 1).setFontSize(14);
   reporte.getRange(2, 1).setFontColor('#686a60');
 
-  reporte.getRange(fila, 1, 1, COLUMNAS.length).setValues([COLUMNAS]).setFontWeight('bold').setBackground('#eef6f5');
+  const encabezados = ['Servicio'].concat(COLUMNAS);
+  reporte.getRange(fila, 1, 1, encabezados.length).setValues([encabezados]).setFontWeight('bold').setBackground('#eef6f5');
   const inicioLista = fila + 1;
   if (filas.length) {
-    // Los textos que empiezan con = + - @ se guardan como texto, igual que en la pestaña PQRS.
-    const lista = filas.map((f) => f.map((v) => (typeof v === 'string' ? seguro_(v) : v)));
-    reporte.getRange(inicioLista, 1, lista.length, COLUMNAS.length).setValues(lista);
+    // Los textos que empiezan con = + - @ se guardan como texto, igual que en las pestañas de PQRS.
+    const lista = filas.map((f) => [f.servicio].concat(f.valores.map((v) => (typeof v === 'string' ? seguro_(v) : v))));
+    reporte.getRange(inicioLista, 1, lista.length, encabezados.length).setValues(lista);
     [COL['Fecha'], COL['Actualizado']].forEach((c) => {
-      reporte.getRange(inicioLista, c + 1, lista.length, 1).setNumberFormat('dd/mm/yyyy hh:mm');
+      reporte.getRange(inicioLista, c + 2, lista.length, 1).setNumberFormat('dd/mm/yyyy hh:mm');
     });
   } else {
     reporte.getRange(inicioLista, 1).setValue('No hay PQRS radicadas en esas fechas.');
@@ -510,16 +551,20 @@ function hoja_(nombre) {
 
 function buscar_(radicado) {
   if (!/^PQRS-\d{4}-\d{6}$/.test(radicado)) return null;
-  const hoja = hoja_(HOJA_PQRS);
-  const celda = hoja.getRange('A:A').createTextFinder(radicado).matchEntireCell(true).findNext();
-  if (!celda || celda.getRow() < 2) return null;
-  const numero = celda.getRow();
-  return { hoja: hoja, numero: numero, valores: hoja.getRange(numero, 1, 1, COLUMNAS.length).getValues()[0] };
+  for (let i = 0; i < SERVICIOS.length; i++) {
+    const hoja = hojaServicio_(SERVICIOS[i]);
+    const celda = hoja.getRange('A:A').createTextFinder(radicado).matchEntireCell(true).findNext();
+    if (!celda || celda.getRow() < 2) continue;
+    const numero = celda.getRow();
+    return { hoja: hoja, numero: numero, servicio: SERVICIOS[i], valores: hoja.getRange(numero, 1, 1, COLUMNAS.length).getValues()[0] };
+  }
+  return null;
 }
 
-function aSolicitud_(f) {
+function aSolicitud_(f, servicio) {
   return {
     radicado: f[COL['Radicado']],
+    servicio: servicio,
     fecha: fecha_(f[COL['Fecha']]),
     tipo: f[COL['Tipo']],
     nombre: limpio_(f[COL['Nombre']]),
