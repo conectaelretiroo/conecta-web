@@ -6,6 +6,7 @@ import { canales, categorias } from "./data/canales";
 import { programas } from "./data/programas";
 import { actualizarPQRS, ErrorPQRS, Estado, estados, EventoHistorial, listarPQRS, modoDemo, obtenerPQRS, radicarPQRS, Solicitud } from "./services/pqrs";
 import { cerrarSesion, guardarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
+import { actualizarSeo } from "./seo";
 
 type IconName = "play" | "menu" | "close" | "arrow" | "clock" | "signal" | "copy" | "lock" | "search" | "check";
 
@@ -309,6 +310,7 @@ function NotFound() {
 export default function App() {
   const [path, setPath] = useState(window.location.pathname);
   useEffect(() => { const update = () => setPath(window.location.pathname); window.addEventListener("popstate", update); return () => window.removeEventListener("popstate", update); }, []);
+  useEffect(() => actualizarSeo(path), [path]);
   const pages: Record<string, ReactNode> = { "/": <Home />, "/en-vivo": <Live />, "/programacion": <Programming />, "/programas": <Programs />, "/canales": <Channels />, "/pqrs": <Pqrs />, "/admin": <Admin />, "/politica-de-datos": <Policy /> };
   return <><Header path={path} /><main>{pages[path] ?? <NotFound />}</main><Footer /></>;
 }
