@@ -288,13 +288,21 @@ th { color: var(--muted); background: var(--soft); }
 
 .footer { position: relative; padding-top: 4rem; border-top: 0.25rem solid var(--teal); }
 .footer::before { content: ""; position: absolute; top: -0.25rem; left: 0; width: 8rem; height: 0.25rem; background: var(--cyan); box-shadow: 8rem 0 0 var(--orange), 16rem 0 0 var(--green), 24rem 0 0 var(--pink); }
-.footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 0.7fr; gap: 3rem; }
+.footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 0.9fr; gap: 3rem; }
 .footer-grid > div:first-child { padding-left: 1.25rem; border-left: 0.125rem solid var(--cyan); }
 .footer-grid h3 { margin-bottom: 1rem; font-size: 1rem; }
 .footer-grid p, .footer-grid a { display: block; color: #c8c8c3; font-size: 0.875rem; }
 .footer-grid a { margin-block: 0.65rem; }
 .footer-grid a { transition: color 180ms ease, transform 180ms ease; }
 .footer-grid a:hover { color: var(--cyan); transform: translateX(0.2rem); }
+.footer-grid .redes { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.footer-grid .red { display: grid; place-items: center; width: 2.5rem; height: 2.5rem; margin: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.08); color: #fff; transition: background 180ms ease, transform 180ms ease; }
+.footer-grid .red svg { width: 1.25rem; height: 1.25rem; }
+.footer-grid .red:hover { color: #fff; transform: translateY(-0.2rem); }
+.footer-grid .red--facebook:hover { background: #0866ff; }
+.footer-grid .red--instagram:hover { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%); }
+.footer-grid .red--youtube:hover { background: #ff0000; }
+.footer-grid .red--whatsapp:hover { background: #25d366; }
 .footer-bottom { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: 3rem; padding-block: 1.5rem; border-top: 0.0625rem solid var(--secondary); color: #c8c8c3; font-size: 0.75rem; }
 .footer-bottom a { display: flex; align-items: center; gap: 0.4rem; }
 
@@ -354,7 +362,7 @@ main > section:nth-child(2) { animation: sectionEnter 560ms 80ms cubic-bezier(0.
   .featured-program, .program-grid { grid-template-columns: 1fr; }
   .featured-program { min-height: 0; }
   .program-visual { min-height: 14rem; }
-  .carousel-arrow { top: 7rem; width: 2.75rem; height: 2.75rem; min-height: 2.75rem; }
+  .carousel-arrow { top: 7rem; width: 2.5rem; height: 2.5rem; min-height: 2.75rem; }
   .carousel-arrow--previous { left: 0.75rem; }
   .carousel-arrow--next { right: 0.75rem; }
   .carousel-stage { margin-inline: -0.25rem; padding-inline: 0.25rem; }
