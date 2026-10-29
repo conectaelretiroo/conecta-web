@@ -114,4 +114,4 @@ Además de la página, se pueden registrar PQRS escribiendo directamente en las 
 - Si cambias **Estado** o **Respuesta** a mano, se actualiza la columna Actualizado y queda en Historial. La respuesta escrita en la hoja **no** se envía por correo: para enviarla usa el panel.
 - Las columnas de texto largo (Nombre, Ubicación, Asunto, Descripción, Respuesta) se ajustan en varias líneas y la fila crece sola.
 
-Para activarlo (una sola vez): pega `Code.gs` y `appsscript.json`, ejecuta **autorizar** desde el editor y acepta el permiso nuevo ("administrar disparadores"). Eso instala el aviso de edición y pone las listas y el formato. Luego crea una **Nueva versión** de la implementación.
+Para activarlo: pega `Code.gs` y `appsscript.json` y guarda. El radicado y la fecha automáticos funcionan desde ese momento, sin instalar nada. Para poner las listas y el formato, ejecuta **autorizar** una vez desde el editor. Luego crea una **Nueva versión** de la implementación.

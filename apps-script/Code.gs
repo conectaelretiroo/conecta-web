@@ -16,7 +16,7 @@
  * Las PQRS se guardan en una pestaña por servicio: PQRS Internet, PQRS Parabólica y PQRS Canal.
  * En la hoja, el menú PQRS → "Reporte entre fechas…" llena la pestaña Reporte con las tres juntas.
  * También se pueden escribir PQRS a mano en esas pestañas: Tipo, Estado y Responsable tienen lista
- * desplegable, y al llenar una fila nueva el script le pone radicado, fecha y estado solo (ver alEditar).
+ * desplegable, y al llenar una fila nueva el script le pone radicado, fecha y estado solo (ver onEdit).
  */
 
 // Cada servicio tiene su pestaña: "PQRS Internet", "PQRS Parabólica" y "PQRS Canal".
@@ -120,16 +120,19 @@ function filasPqrs_() {
 }
 
 /**
- * Ejecutar desde el editor después de cambiar permisos: pide la autorización, muestra los alias de Gmail,
- * instala el aviso de edición (alEditar) y pone las listas desplegables en las pestañas de PQRS.
+ * Ejecutar desde el editor después de cambiar permisos: pide la autorización, muestra los alias de Gmail
+ * y pone las listas desplegables y el formato en las pestañas de PQRS.
  */
 function autorizar() {
   console.log('Alias de "Enviar como": ' + GmailApp.getAliases().join(', '));
-  const libro = SpreadsheetApp.getActive();
-  ScriptApp.getProjectTriggers()
-    .filter((t) => t.getHandlerFunction() === 'alEditar')
-    .forEach((t) => ScriptApp.deleteTrigger(t));
-  ScriptApp.newTrigger('alEditar').forSpreadsheet(libro).onEdit().create();
+  try {
+    // Una versión anterior instalaba un disparador "alEditar"; ahora basta onEdit y se quita para no correr dos veces.
+    ScriptApp.getProjectTriggers()
+      .filter((t) => t.getHandlerFunction() === 'alEditar')
+      .forEach((t) => ScriptApp.deleteTrigger(t));
+  } catch (error) {
+    console.log('No se revisaron los disparadores: ' + error);
+  }
   configurar();
   console.log('Listo: las PQRS escritas a mano reciben radicado y fecha solas.');
 }
@@ -495,14 +498,14 @@ function consultarYoutube_(video) {
 // ---------- PQRS escritas a mano en la hoja ----------
 
 /**
- * Disparador instalable "al editar" (lo crea autorizar()). Corre como la cuenta del canal, así comparte
- * el candado y el consecutivo con las PQRS de la web. Las escrituras del propio script (las de la web y
- * el panel) no lo disparan.
+ * Google llama onEdit sola cada vez que alguien escribe en la hoja; no hay que instalar nada.
+ * Comparte el candado y el consecutivo con las PQRS de la web. Las escrituras del propio script
+ * (las de la web y el panel) no la disparan.
  *  - Fila nueva sin radicado: le pone radicado, fecha (si no la escribieron), estado Radicada y Actualizado.
  *  - Cambio de Estado o Respuesta en una fila con radicado: pone Actualizado y deja el registro en Historial.
  *    Ojo: la respuesta escrita en la hoja no se envía por correo; para enviarla se usa el panel.
  */
-function alEditar(e) {
+function onEdit(e) {
   if (!e || !e.range) return;
   const hoja = e.range.getSheet();
   const servicio = servicioDeHoja_(hoja.getName());
@@ -555,6 +558,9 @@ function alEditar(e) {
     candado.releaseLock();
   }
 }
+
+/** Queda vacía por si sigue instalado el disparador de la versión anterior; autorizar() lo quita. */
+function alEditar() {}
 
 /** El servicio de una pestaña de PQRS ("PQRS Internet" → "Internet"); la pestaña "PQRS" de antes es del canal. */
 function servicioDeHoja_(nombre) {
