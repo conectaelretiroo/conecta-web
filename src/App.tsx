@@ -59,7 +59,7 @@ function Header({ path }: { path: string }) {
   const [open, setOpen] = useState(false);
   const envivo = useEnVivo();
   // "En vivo" y los botones solo aparecen mientras hay una transmisión activa.
-  const items = [["Inicio", "/"], ...(envivo ? [["En vivo", "/en-vivo"]] : []), ["Programación", "/programacion"], ["Programas", "/programas"], ["Canales", "/canales"], ["PQRS", "/pqrs"]];
+  const items = [["Inicio", "/"], ...(envivo ? [["En vivo", "/en-vivo"]] : []), ["Canales", "/canales"], ["Programas", "/programas"], ["PQRS", "/pqrs"]];
   return (
     <header className="site-header">
       <div className="container header-inner">
@@ -97,7 +97,8 @@ function ProgramVisual({ color, compact = false }: { color: string; compact?: bo
   return <div className={`program-visual visual--${color}${compact ? " compact" : ""}`}><Logo compact /><span>Producción propia</span></div>;
 }
 
-function Home() {
+/** Carrusel de programas: flechas, deslizar en el celular y avance solo cada 7 s. */
+function ProgramCarousel() {
   const [slide, setSlide] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const current = programas[slide];
@@ -111,14 +112,32 @@ function Home() {
     }
     setTouchStart(null);
   };
-  const hoy = parrillaSemanal[diaDeHoy()];
-  const proxima = proximaEmision();
-  const envivo = useEnVivo();
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const timer = window.setInterval(() => setSlide((value) => (value + 1) % programas.length), 7000);
     return () => window.clearInterval(timer);
   }, []);
+  return (
+    <>
+    <div
+      className="carousel-stage"
+      onTouchStart={(event) => setTouchStart(event.changedTouches[0].clientX)}
+      onTouchEnd={(event) => finishSwipe(event.changedTouches[0].clientX)}
+      onTouchCancel={() => setTouchStart(null)}
+    >
+      <Button variant="secondary" className="carousel-arrow carousel-arrow--previous" onClick={previousSlide}><span aria-hidden="true">←</span><span className="sr-only">Programa anterior</span></Button>
+      <article className="featured-program" key={current.nombre}><ProgramVisual color={current.color} /><div className="featured-copy"><Eyebrow>{current.categoria}</Eyebrow><Text as="h3">{current.nombre}</Text><Text>{current.descripcion}</Text><Text className="schedule"><Icon name="clock" /> {current.horario}</Text><AppLink href={`/programacion?programa=${encodeURIComponent(current.nombre)}`} className="button button--primary">Ver programación <Icon name="arrow" /></AppLink></div></article>
+      <Button variant="secondary" className="carousel-arrow carousel-arrow--next" onClick={nextSlide}><span aria-hidden="true">→</span><span className="sr-only">Programa siguiente</span></Button>
+    </div>
+    <div className="progress-bars">{programas.map((p, index) => <button key={p.nombre} className={index === slide ? "active" : ""} onClick={() => setSlide(index)} aria-label={`Ver ${p.nombre}`} />)}</div>
+    </>
+  );
+}
+
+function Home() {
+  // Inicio queda vacío a propósito (Tomás agregará contenido después); solo el banner sale mientras hay transmisión.
+  const proxima = proximaEmision();
+  const envivo = useEnVivo();
   return (
     <>
       {envivo && <section className="hero" data-theme="dark">
@@ -127,24 +146,7 @@ function Home() {
           <div><LiveVideo envivo={envivo} />{proxima && <div className="now-row"><span>Próximo programa · {proxima.dia} {proxima.hora}</span><strong>{proxima.nombre}</strong></div>}</div>
         </div>
       </section>}
-      <section className={`section program-showcase${envivo ? "" : " program-showcase--first"}`}>
-        <div className="container">
-          <Eyebrow>Producción propia</Eyebrow><div className="section-heading"><Text as="h2">Nuestros programas</Text><span className="carousel-count">{slide + 1} / {programas.length}</span></div>
-          <div
-            className="carousel-stage"
-            onTouchStart={(event) => setTouchStart(event.changedTouches[0].clientX)}
-            onTouchEnd={(event) => finishSwipe(event.changedTouches[0].clientX)}
-            onTouchCancel={() => setTouchStart(null)}
-          >
-            <Button variant="secondary" className="carousel-arrow carousel-arrow--previous" onClick={previousSlide}><span aria-hidden="true">←</span><span className="sr-only">Programa anterior</span></Button>
-            <article className="featured-program" key={current.nombre}><ProgramVisual color={current.color} /><div className="featured-copy"><Eyebrow>{current.categoria}</Eyebrow><Text as="h3">{current.nombre}</Text><Text>{current.descripcion}</Text><Text className="schedule"><Icon name="clock" /> {current.horario}</Text><AppLink href="/programacion" className="text-link">Ver en la programación <Icon name="arrow" /></AppLink></div></article>
-            <Button variant="secondary" className="carousel-arrow carousel-arrow--next" onClick={nextSlide}><span aria-hidden="true">→</span><span className="sr-only">Programa siguiente</span></Button>
-          </div>
-          <div className="progress-bars">{programas.map((p, index) => <button key={p.nombre} className={index === slide ? "active" : ""} onClick={() => setSlide(index)} aria-label={`Ver ${p.nombre}`} />)}</div>
-        </div>
-      </section>
-      <section className="section section--soft"><div className="container"><div className="section-heading"><div><Eyebrow>{fechaDeHoy()}</Eyebrow><Text as="h2">Programación de hoy</Text></div><AppLink href="/programacion" className="text-link">Ver programación completa <Icon name="arrow" /></AppLink></div>{hoy.length ? <div className="schedule-grid">{hoy.slice(0, 3).map((item) => <article className={`schedule-card${item.enVivo ? " is-live" : ""}`} key={item.nombre}>{item.enVivo && <span className="live-badge"><i /> En vivo</span>}<Text className="time">{item.hora}</Text><Text as="h3">{item.nombre}</Text><Text>{item.descripcion}</Text></article>)}</div> : <Text>Hoy no hay programas propios al aire. Consulta la programación de la semana.</Text>}</div></section>
-      <section className="cta"><div className="container cta-inner"><div><Eyebrow>Atención al ciudadano</Eyebrow><Text as="h2">¿Tienes una petición, queja o sugerencia?</Text><Text>Cuéntanos cómo podemos ayudarte o mejorar nuestro servicio a la comunidad.</Text></div><AppLink href="/pqrs" className="button button--primary">Radicar PQRS <Icon name="arrow" /></AppLink></div></section>
+      {!envivo && <section className="section home-empty" />}
     </>
   );
 }
@@ -156,13 +158,19 @@ function Live() {
 }
 
 function Programming() {
-  const [day, setDay] = useState(diaDeHoy);
+  // Desde "Ver programación" de un programa llega ?programa=…: abre el próximo día en que sale y lo resalta.
+  const programa = new URLSearchParams(window.location.search).get("programa");
+  const [day, setDay] = useState(() => {
+    const hoy = dias.indexOf(diaDeHoy());
+    const dia = dias.map((_, i) => dias[(hoy + i) % dias.length]).find((d) => parrillaSemanal[d].some((e) => e.nombre === programa));
+    return dia ?? diaDeHoy();
+  });
   const emisiones = parrillaSemanal[day];
-  return <><PageIntro eyebrow="Parrilla semanal" title="Programación" tone="cyan">Horarios en hora de Colombia de los programas propios del canal.</PageIntro><section className="section"><div className="container"><div className="tabs" role="tablist">{dias.map((item) => <button role="tab" aria-selected={item === day} className={item === day ? "active" : ""} onClick={() => setDay(item)} key={item}>{item}</button>)}</div>{emisiones.length ? <div className="schedule-grid">{emisiones.map((item) => <article className={`schedule-card${item.enVivo ? " is-live" : ""}`} key={item.nombre}>{item.enVivo && <span className="live-badge"><i /> En vivo</span>}<Text className="time">{item.hora}</Text><Text as="h3">{item.nombre}</Text><Text>{item.descripcion}</Text></article>)}</div> : <Text>No hay programas propios este día.</Text>}</div></section></>;
+  return <><PageIntro eyebrow="Parrilla semanal" title="Programación" tone="cyan">Horarios en hora de Colombia de los programas propios del canal.</PageIntro><section className="section"><div className="container"><div className="tabs" role="tablist">{dias.map((item) => <button role="tab" aria-selected={item === day} className={item === day ? "active" : ""} onClick={() => setDay(item)} key={item}>{item}</button>)}</div>{emisiones.length ? <div className="schedule-grid">{emisiones.map((item) => <article className={`schedule-card${item.enVivo ? " is-live" : ""}${item.nombre === programa ? " is-selected" : ""}`} key={item.nombre}>{item.enVivo && <span className="live-badge"><i /> En vivo</span>}<Text className="time">{item.hora}</Text><Text as="h3">{item.nombre}</Text><Text>{item.descripcion}</Text></article>)}</div> : <Text>No hay programas propios este día.</Text>}</div></section></>;
 }
 
 function Programs() {
-  return <><PageIntro eyebrow="Producción propia" title="Programas" tone="orange">Historias, información y conversaciones hechas desde El Retiro.</PageIntro><section className="section"><div className="container program-grid">{programas.map((program) => <article className="program-card" key={program.nombre}><ProgramVisual color={program.color} compact /><div><Eyebrow>{program.categoria}</Eyebrow><Text as="h2">{program.nombre}</Text><Text>{program.descripcion}</Text><Text className="schedule"><Icon name="clock" /> {program.horario}</Text></div></article>)}</div></section></>;
+  return <><PageIntro eyebrow="Producción propia" title="Programas" tone="orange">Historias, información y conversaciones hechas desde El Retiro.</PageIntro><section className="section program-showcase"><div className="container"><ProgramCarousel /></div></section></>;
 }
 
 function Channels() {

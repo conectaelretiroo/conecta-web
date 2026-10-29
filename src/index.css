@@ -216,6 +216,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .schedule-card:nth-child(3n + 3) { --card-accent: var(--orange); }
 .schedule-card:hover { transform: translateY(-0.25rem); border-color: color-mix(in srgb, var(--card-accent) 45%, var(--border)); box-shadow: var(--shadow-card); }
 .schedule-card.is-live { border-color: color-mix(in srgb, var(--pink) 45%, var(--border)); border-top-color: var(--pink); }
+.schedule-card.is-selected { border-color: var(--teal); border-top-color: var(--teal); box-shadow: 0 0 0 0.1875rem color-mix(in srgb, var(--teal) 25%, transparent), var(--shadow-card); }
 .schedule-card .live-badge { right: 1rem; left: auto; }
 .schedule-card .time { color: var(--teal); font-weight: 600; }
 .schedule-card > p:last-child { color: var(--secondary); }
@@ -484,3 +485,5 @@ main > section:nth-child(2) { animation: sectionEnter 560ms 80ms cubic-bezier(0.
 @media (max-width: 40rem) {
   .service-options { grid-template-columns: 1fr; }
 }
+.home-empty { min-height: 40vh; }
+.featured-copy .button { margin-top: 1rem; }
