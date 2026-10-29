@@ -3,7 +3,7 @@
 export const SITIO = "https://conectaelretiro.tv";
 
 const paginas: Record<string, { titulo: string; descripcion: string }> = {
-  "/": { titulo: "Conecta El Retiro · Canal de televisión de El Retiro, Antioquia", descripcion: "Conecta Telecomunicaciones, el canal local de El Retiro, Antioquia: en vivo, programación, programas propios, canales de televisión e internet, y PQRS." },
+  "/": { titulo: "Conecta El Retiro", descripcion: "Conecta Telecomunicaciones, el canal local de El Retiro, Antioquia: en vivo, programación, programas propios, canales de televisión e internet, y PQRS." },
   "/en-vivo": { titulo: "En vivo · Conecta El Retiro", descripcion: "Mira en vivo las transmisiones del canal Conecta El Retiro." },
   "/programacion": { titulo: "Programación · Conecta El Retiro", descripcion: "Horarios de la programación semanal del canal Conecta El Retiro." },
   "/programas": { titulo: "Programas · Conecta El Retiro", descripcion: "Programas propios del canal Conecta El Retiro: historias, información y conversaciones hechas desde El Retiro." },
