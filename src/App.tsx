@@ -58,8 +58,8 @@ function Eyebrow({ children }: { children: ReactNode }) {
 function Header({ path }: { path: string }) {
   const [open, setOpen] = useState(false);
   const envivo = useEnVivo();
-  // "En vivo" y los botones solo aparecen mientras hay una transmisión activa.
-  const items = [["Inicio", "/"], ...(envivo ? [["En vivo", "/en-vivo"]] : []), ["Canales", "/canales"], ["Programas", "/programas"], ["PQRS", "/pqrs"]];
+  // El botón "Ver en vivo" solo aparece mientras hay una transmisión activa; el menú no lleva "En vivo".
+  const items = [["Inicio", "/"], ["Canales", "/canales"], ["Programas", "/programas"], ["PQRS", "/pqrs"]];
   return (
     <header className="site-header">
       <div className="container header-inner">
