@@ -487,3 +487,19 @@ main > section:nth-child(2) { animation: sectionEnter 560ms 80ms cubic-bezier(0.
 }
 .home-empty { min-height: 40vh; }
 .featured-copy .button { margin-top: 1rem; }
+
+/* Aviso "Estamos en vivo": pequeño, abajo a la derecha, sin tapar la página */
+.live-notice { position: fixed; z-index: 40; right: 1.25rem; bottom: 1.25rem; width: min(calc(100% - 2.5rem), 22rem); display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.75rem 0.75rem 1rem; color: var(--ink); background: var(--white); border: 0.0625rem solid var(--border); border-radius: var(--radius-m); box-shadow: 0 0.75rem 2rem rgb(30 31 25 / 18%); animation: liveNoticeIn 420ms cubic-bezier(0.22, 1, 0.36, 1) 600ms both; }
+.live-notice > div { min-width: 0; flex: 1; display: grid; }
+.live-notice strong { font-size: 0.9375rem; }
+.live-notice div span { overflow: hidden; color: var(--muted); font-size: 0.8125rem; text-overflow: ellipsis; white-space: nowrap; }
+.live-notice .button { min-height: 2.25rem; padding: 0.4rem 0.8rem; flex: none; }
+.live-notice__dot { width: 0.6rem; height: 0.6rem; flex: none; background: #ca1f64; border-radius: 50%; box-shadow: 0 0 0 0 rgb(202 31 100 / 60%); animation: liveNoticePulse 1.8s ease-out infinite; }
+.live-notice__close { display: grid; place-items: center; width: 2rem; height: 2rem; flex: none; padding: 0; color: var(--muted); background: none; border: 0; border-radius: 50%; cursor: pointer; }
+.live-notice__close:hover { color: var(--ink); background: var(--soft); }
+.live-notice__close .icon { width: 1rem; height: 1rem; }
+@keyframes liveNoticeIn { from { opacity: 0; transform: translateY(1rem); } to { opacity: 1; transform: none; } }
+@keyframes liveNoticePulse { 0% { box-shadow: 0 0 0 0 rgb(202 31 100 / 60%); } 70%, 100% { box-shadow: 0 0 0 0.5rem rgb(202 31 100 / 0%); } }
+@media (max-width: 40rem) {
+  .live-notice { right: 1rem; bottom: 1rem; width: calc(100% - 2rem); }
+}

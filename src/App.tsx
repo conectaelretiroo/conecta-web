@@ -135,20 +135,24 @@ function ProgramCarousel() {
 }
 
 function Home() {
-  // Inicio queda vacío a propósito (Tomás agregará contenido después); solo el banner sale mientras hay transmisión.
-  const proxima = proximaEmision();
+  // Inicio queda vacío a propósito (Tomás agregará contenido después). El en vivo ya no ocupa Inicio:
+  // se anuncia con el botón "Ver en vivo" del encabezado y el aviso pequeño de LiveNotice.
+  return <section className="section home-empty" />;
+}
+
+// Aviso pequeño en una esquina mientras hay transmisión. Se puede cerrar y no vuelve a salir
+// para ese mismo en vivo durante la visita. En la página En vivo no se muestra.
+function LiveNotice({ path }: { path: string }) {
   const envivo = useEnVivo();
-  return (
-    <>
-      {envivo && <section className="hero" data-theme="dark">
-        <div className="container hero-grid">
-          <div><Eyebrow>Canal local · El Retiro, Antioquia</Eyebrow><Text as="h1" className="display">La señal de nuestro pueblo, en vivo</Text><Text className="lead">Información, cultura y conversación para reconocer lo que somos y mantenernos conectados.</Text><div className="button-row"><AppLink href="/en-vivo" className="button button--primary"><Icon name="play" /> Ver en vivo</AppLink><AppLink href="/programacion" className="button button--secondary">Programación</AppLink></div></div>
-          <div><LiveVideo envivo={envivo} />{proxima && <div className="now-row"><span>Próximo programa · {proxima.dia} {proxima.hora}</span><strong>{proxima.nombre}</strong></div>}</div>
-        </div>
-      </section>}
-      {!envivo && <section className="section home-empty" />}
-    </>
-  );
+  const [cerrado, setCerrado] = useState(() => {
+    try { return sessionStorage.getItem("conecta-aviso-envivo") ?? ""; } catch { return ""; }
+  });
+  if (!envivo || path === "/en-vivo" || cerrado === envivo.video) return null;
+  const cerrar = () => {
+    setCerrado(envivo.video);
+    try { sessionStorage.setItem("conecta-aviso-envivo", envivo.video); } catch { /* sin almacenamiento */ }
+  };
+  return <aside className="live-notice" role="status"><span className="live-notice__dot" aria-hidden="true" /><div><strong>Estamos en vivo</strong>{envivo.titulo && <span>{envivo.titulo}</span>}</div><AppLink href="/en-vivo" className="button button--primary" onClick={cerrar}><Icon name="play" /> Ver</AppLink><button type="button" className="live-notice__close" onClick={cerrar} aria-label="Cerrar aviso"><Icon name="close" /></button></aside>;
 }
 
 function Live() {
@@ -402,5 +406,5 @@ export default function App() {
   useEffect(() => { const update = () => setPath(window.location.pathname); window.addEventListener("popstate", update); return () => window.removeEventListener("popstate", update); }, []);
   useEffect(() => actualizarSeo(path), [path]);
   const pages: Record<string, ReactNode> = { "/": <Home />, "/en-vivo": <Live />, "/programacion": <Programming />, "/programas": <Programs />, "/canales": <Channels />, "/pqrs": <Pqrs />, "/admin": <Admin />, "/politica-de-datos": <Policy /> };
-  return <><Header path={path} /><main>{pages[path] ?? <NotFound />}</main><Footer /></>;
+  return <><Header path={path} /><main>{pages[path] ?? <NotFound />}</main><Footer /><LiveNotice path={path} /></>;
 }
