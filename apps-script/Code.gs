@@ -98,6 +98,23 @@ function prepararPestana_(hoja) {
     .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
   hoja.setFrozenRows(1);
   hoja.setFrozenColumns(1);
+  // Las filas toman la altura de su texto (si alguien les fijó una altura a mano, se recalcula).
+  if (hoja.getLastRow() > 1) hoja.autoResizeRows(2, hoja.getLastRow() - 1);
+}
+
+/** Aplica listas y formato a las pestañas de PQRS que existan (sin crear ni renombrar ninguna). */
+function formatearPestanas_() {
+  const libro = SpreadsheetApp.getActive();
+  SERVICIOS.map(nombreHoja_).concat([HOJA_PQRS_ANTERIOR])
+    .map((nombre) => libro.getSheetByName(nombre))
+    .filter(Boolean)
+    .forEach(prepararPestana_);
+}
+
+/** Opción del menú PQRS: vuelve a ajustar el formato si alguien lo cambió. */
+function ajustarFormato() {
+  formatearPestanas_();
+  SpreadsheetApp.getActive().toast('Listo: celdas ajustadas al texto.', 'PQRS');
 }
 
 // Ancho de cada columna en píxeles: las de texto largo son anchas y se ajustan en varias líneas.
@@ -557,6 +574,7 @@ function onEdit(e) {
   } finally {
     candado.releaseLock();
   }
+  hoja.autoResizeRows(primera, ultima - primera + 1);
 }
 
 /** Queda vacía por si sigue instalado el disparador de la versión anterior; autorizar() lo quita. */
@@ -577,7 +595,14 @@ const HOJA_REPORTE = 'Reporte';
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('PQRS')
     .addItem('Reporte entre fechas…', 'abrirReporte')
+    .addItem('Ajustar celdas al texto', 'ajustarFormato')
     .addToUi();
+  try {
+    // Así las filas nuevas (de la web o a mano) siempre quedan con el formato al abrir la hoja.
+    formatearPestanas_();
+  } catch (error) {
+    console.log('No se pudo ajustar el formato al abrir: ' + error);
+  }
 }
 
 function abrirReporte() {
