@@ -64,8 +64,13 @@ function hojaServicio_(servicio) {
   if (anterior) return anterior.setName(nombre);
   crearHoja_(libro, nombre, COLUMNAS);
   hoja = libro.getSheetByName(nombre);
-  hoja.getRange(2, COL['Estado'] + 1, 1000, 1)
-    .setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(ESTADOS, true).build());
+  // Lista desplegable de estados en toda la columna (una pestaña nueva trae 1000 filas: no pasarse de ahí).
+  try {
+    hoja.getRange(2, COL['Estado'] + 1, Math.max(hoja.getMaxRows() - 1, 1), 1)
+      .setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(ESTADOS, true).build());
+  } catch (error) {
+    console.error('No se pudo poner la lista de estados en ' + nombre + ': ' + error);
+  }
   return hoja;
 }
 
