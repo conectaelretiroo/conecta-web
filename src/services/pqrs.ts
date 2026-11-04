@@ -68,9 +68,19 @@ export async function llamar<T>(accion: string, datos: Record<string, unknown>):
   } catch {
     throw new ErrorPQRS("No hay conexión. Revisa tu internet e intenta de nuevo.");
   }
-  const cuerpo = await respuesta.json().catch(() => null);
-  if (!cuerpo) throw new ErrorPQRS("No pudimos procesar la solicitud. Intenta de nuevo.");
-  if (!cuerpo.ok) throw new ErrorPQRS(cuerpo.error, Boolean(cuerpo.sesion));
+  const texto = await respuesta.text().catch(() => "");
+  let cuerpo: { ok?: boolean; error?: string; sesion?: boolean } | null = null;
+  try {
+    cuerpo = JSON.parse(texto);
+  } catch {
+    cuerpo = null;
+  }
+  // Si Apps Script responde una página en vez de datos (permisos, implementación), se dice cuál fue.
+  if (!cuerpo) {
+    const titulo = /<title>([^<]*)<\/title>/i.exec(texto)?.[1]?.trim();
+    throw new ErrorPQRS(`No pudimos procesar la solicitud. Intenta de nuevo. (Detalle: el servidor respondió ${respuesta.status}${titulo ? ` «${titulo}»` : ""} en vez de datos)`);
+  }
+  if (!cuerpo.ok) throw new ErrorPQRS(cuerpo.error ?? "No pudimos procesar la solicitud. Intenta de nuevo.", Boolean(cuerpo.sesion));
   return cuerpo as T;
 }
 
