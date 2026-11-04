@@ -104,3 +104,14 @@ Para activarlo:
 1. Pega el `Code.gs` y el `appsscript.json` nuevos y guarda.
 2. Elige **autorizar** y toca **Ejecutar**; acepta el permiso nuevo ("mostrar contenido en aplicaciones de Google").
 3. Recarga la hoja: el menú **PQRS** aparece junto a Ayuda.
+
+## PQRS escritas a mano en la hoja
+
+Además de la página, se pueden registrar PQRS escribiendo directamente en las pestañas **PQRS Internet**, **PQRS Parabólica** o **PQRS Canal** (por ejemplo, las que llegan por teléfono o en persona).
+
+- **Tipo** y **Estado** tienen lista desplegable y no aceptan otros valores. **Responsable** sugiere los correos de la pestaña Equipo.
+- Al escribir en una fila nueva, el script le pone solo el **radicado** (el mismo consecutivo de la web, sin repetirse), la **fecha** (si no la escribiste), el estado **Radicada** y la hora en **Actualizado**, y lo anota en Historial. Deja la columna Radicado vacía.
+- Si cambias **Estado** o **Respuesta** a mano, se actualiza la columna Actualizado y queda en Historial. La respuesta escrita en la hoja **no** se envía por correo: para enviarla usa el panel.
+- Las columnas de texto largo (Nombre, Ubicación, Asunto, Descripción, Respuesta) se ajustan en varias líneas y la fila crece sola.
+
+Para activarlo: pega `Code.gs` y `appsscript.json` y guarda. El radicado y la fecha automáticos funcionan desde ese momento, sin instalar nada. Para poner las listas y el formato, ejecuta **autorizar** una vez desde el editor. Luego crea una **Nueva versión** de la implementación.

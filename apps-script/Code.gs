@@ -15,6 +15,8 @@
  *
  * Las PQRS se guardan en una pestaña por servicio: PQRS Internet, PQRS Parabólica y PQRS Canal.
  * En la hoja, el menú PQRS → "Reporte entre fechas…" llena la pestaña Reporte con las tres juntas.
+ * También se pueden escribir PQRS a mano en esas pestañas: Tipo, Estado y Responsable tienen lista
+ * desplegable, y al llenar una fila nueva el script le pone radicado, fecha y estado solo (ver onEdit).
  */
 
 // Cada servicio tiene su pestaña: "PQRS Internet", "PQRS Parabólica" y "PQRS Canal".
@@ -45,9 +47,9 @@ const ZONA = 'America/Bogota';
 /** Ejecutar una sola vez desde el editor: crea las pestañas con sus encabezados. */
 function configurar() {
   const libro = SpreadsheetApp.getActive();
-  SERVICIOS.forEach(hojaServicio_);
   crearHoja_(libro, HOJA_HISTORIAL, ['Fecha', 'Radicado', 'Acción', 'Detalle', 'Responsable']);
   crearHoja_(libro, HOJA_EQUIPO, ['Correo', 'Nombre', 'Avisos']);
+  SERVICIOS.forEach((servicio) => prepararPestana_(hojaServicio_(servicio)));
 }
 
 function nombreHoja_(servicio) {
@@ -64,13 +66,7 @@ function hojaServicio_(servicio) {
   if (anterior) return conColumnas_(anterior.setName(nombre));
   crearHoja_(libro, nombre, COLUMNAS);
   hoja = libro.getSheetByName(nombre);
-  // Lista desplegable de estados en toda la columna (una pestaña nueva trae 1000 filas: no pasarse de ahí).
-  try {
-    hoja.getRange(2, COL['Estado'] + 1, Math.max(hoja.getMaxRows() - 1, 1), 1)
-      .setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(ESTADOS, true).build());
-  } catch (error) {
-    console.error('No se pudo poner la lista de estados en ' + nombre + ': ' + error);
-  }
+  prepararPestana_(hoja);
   return hoja;
 }
 
@@ -80,6 +76,59 @@ function conColumnas_(hoja) {
   if (faltan > 0) hoja.insertColumnsAfter(hoja.getMaxColumns(), faltan);
   return hoja;
 }
+
+/**
+ * Listas desplegables y formato de fecha para escribir PQRS a mano. Tipo y Estado solo aceptan
+ * valores de la lista; Responsable sugiere los correos de la pestaña Equipo pero acepta otros.
+ */
+function prepararPestana_(hoja) {
+  const filas = Math.max(hoja.getMaxRows() - 1, 1);
+  const columna = (nombre) => hoja.getRange(2, COL[nombre] + 1, filas, 1);
+  const lista = (valores) => SpreadsheetApp.newDataValidation().requireValueInList(valores, true).setAllowInvalid(false).build();
+  columna('Tipo').setDataValidation(lista(TIPOS));
+  columna('Estado').setDataValidation(lista(ESTADOS));
+  const equipo = SpreadsheetApp.getActive().getSheetByName(HOJA_EQUIPO);
+  if (equipo) {
+    columna('Responsable').setDataValidation(SpreadsheetApp.newDataValidation()
+      .requireValueInRange(equipo.getRange('A2:A'), true).setAllowInvalid(true).build());
+  }
+  columna('Fecha').setNumberFormat('dd/mm/yyyy hh:mm');
+  columna('Actualizado').setNumberFormat('dd/mm/yyyy hh:mm');
+
+  // Textos largos en varias líneas (la fila crece sola) y todo alineado arriba para leer cada PQRS de corrido.
+  hoja.getRange(1, 1, filas + 1, COLUMNAS.length).setVerticalAlignment('top').setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
+  ['Nombre', 'Ubicación', 'Asunto', 'Descripción', 'Respuesta'].forEach((nombre) => {
+    columna(nombre).setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
+  });
+  Object.keys(ANCHOS).forEach((nombre) => hoja.setColumnWidth(COL[nombre] + 1, ANCHOS[nombre]));
+  hoja.getRange(1, 1, 1, COLUMNAS.length).setFontWeight('bold').setBackground('#eef6f5')
+    .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
+  hoja.setFrozenRows(1);
+  hoja.setFrozenColumns(1);
+  // Las filas toman la altura de su texto (si alguien les fijó una altura a mano, se recalcula).
+  if (hoja.getLastRow() > 1) hoja.autoResizeRows(2, hoja.getLastRow() - 1);
+}
+
+/** Aplica listas y formato a las pestañas de PQRS que existan (sin crear ni renombrar ninguna). */
+function formatearPestanas_() {
+  const libro = SpreadsheetApp.getActive();
+  SERVICIOS.map(nombreHoja_).concat([HOJA_PQRS_ANTERIOR])
+    .map((nombre) => libro.getSheetByName(nombre))
+    .filter(Boolean)
+    .forEach(prepararPestana_);
+}
+
+/** Opción del menú PQRS: vuelve a ajustar el formato si alguien lo cambió. */
+function ajustarFormato() {
+  formatearPestanas_();
+  SpreadsheetApp.getActive().toast('Listo: celdas ajustadas al texto.', 'PQRS');
+}
+
+// Ancho de cada columna en píxeles: las de texto largo son anchas y se ajustan en varias líneas.
+const ANCHOS = {
+  Radicado: 150, Fecha: 120, Tipo: 100, Nombre: 170, Correo: 210, Teléfono: 110, Ubicación: 170,
+  Asunto: 240, Descripción: 380, Estado: 110, Respuesta: 380, Actualizado: 120, Responsable: 210,
+};
 
 /** Todas las filas de las tres pestañas, cada una con su servicio. */
 function filasPqrs_() {
@@ -104,9 +153,22 @@ function leerFilas_(hoja, desde, cantidad) {
     .map((f) => f.concat(new Array(COLUMNAS.length - columnas).fill('')));
 }
 
-/** Ejecutar desde el editor después de cambiar permisos: pide la autorización y muestra los alias de Gmail. */
+/**
+ * Ejecutar desde el editor después de cambiar permisos: pide la autorización, muestra los alias de Gmail
+ * y pone las listas desplegables y el formato en las pestañas de PQRS.
+ */
 function autorizar() {
   console.log('Alias de "Enviar como": ' + GmailApp.getAliases().join(', '));
+  try {
+    // Una versión anterior instalaba un disparador "alEditar"; ahora basta onEdit y se quita para no correr dos veces.
+    ScriptApp.getProjectTriggers()
+      .filter((t) => t.getHandlerFunction() === 'alEditar')
+      .forEach((t) => ScriptApp.deleteTrigger(t));
+  } catch (error) {
+    console.log('No se revisaron los disparadores: ' + error);
+  }
+  configurar();
+  console.log('Listo: las PQRS escritas a mano reciben radicado y fecha solas.');
 }
 
 function crearHoja_(libro, nombre, encabezados) {
@@ -472,6 +534,82 @@ function consultarYoutube_(video) {
   return { existe: true, activo: snippet.liveBroadcastContent !== 'none', titulo: snippet.title };
 }
 
+// ---------- PQRS escritas a mano en la hoja ----------
+
+/**
+ * Google llama onEdit sola cada vez que alguien escribe en la hoja; no hay que instalar nada.
+ * Comparte el candado y el consecutivo con las PQRS de la web. Las escrituras del propio script
+ * (las de la web y el panel) no la disparan.
+ *  - Fila nueva sin radicado: le pone radicado, fecha (si no la escribieron), estado Radicada y Actualizado.
+ *  - Cambio de Estado o Respuesta en una fila con radicado: pone Actualizado y deja el registro en Historial.
+ *    Ojo: la respuesta escrita en la hoja no se envía por correo; para enviarla se usa el panel.
+ */
+function onEdit(e) {
+  if (!e || !e.range) return;
+  const hoja = e.range.getSheet();
+  const servicio = servicioDeHoja_(hoja.getName());
+  if (!servicio) return;
+  conColumnas_(hoja);
+  const primera = Math.max(e.range.getRow(), 2);
+  const ultima = e.range.getLastRow();
+  if (ultima < primera) return;
+  let editor = '';
+  try { editor = e.user ? e.user.getEmail() : ''; } catch (error) { /* Google no siempre dice quién editó */ }
+  editor = editor || 'A mano en la hoja';
+  const colInicio = e.range.getColumn() - 1;
+  const colFin = e.range.getLastColumn() - 1;
+  const tocada = (nombre) => COL[nombre] >= colInicio && COL[nombre] <= colFin;
+
+  const candado = LockService.getScriptLock();
+  candado.waitLock(20000);
+  try {
+    const rango = hoja.getRange(primera, 1, ultima - primera + 1, COLUMNAS.length);
+    const filas = rango.getValues();
+    const ahora = new Date();
+    filas.forEach((fila, i) => {
+      const numero = primera + i;
+      const conDatos = fila.some((valor, c) => c !== COL['Radicado'] && valor !== '' && valor !== null);
+      if (!conDatos) return;
+      const celda = (nombre) => hoja.getRange(numero, COL[nombre] + 1);
+
+      if (!fila[COL['Radicado']]) {
+        const radicado = siguienteRadicado_(ahora);
+        celda('Radicado').setValue(radicado);
+        if (!(fila[COL['Fecha']] instanceof Date)) celda('Fecha').setValue(ahora);
+        if (!fila[COL['Estado']]) celda('Estado').setValue('Radicada');
+        celda('Actualizado').setValue(ahora);
+        historial_(radicado, 'Radicada', 'Escrita a mano en la pestaña ' + hoja.getName() + '.', editor);
+        return;
+      }
+
+      const radicado = String(fila[COL['Radicado']]);
+      if (tocada('Estado') || tocada('Respuesta')) {
+        celda('Actualizado').setValue(ahora);
+        if (tocada('Estado')) {
+          const antes = filas.length === 1 && e.oldValue !== undefined ? 'Antes: ' + e.oldValue : 'Cambiado en la hoja.';
+          historial_(radicado, 'Estado: ' + fila[COL['Estado']], antes, editor);
+        }
+        if (tocada('Respuesta') && fila[COL['Respuesta']]) {
+          historial_(radicado, 'Respuesta escrita en la hoja', String(fila[COL['Respuesta']]), editor);
+        }
+      }
+    });
+  } finally {
+    candado.releaseLock();
+  }
+  hoja.autoResizeRows(primera, ultima - primera + 1);
+}
+
+/** Queda vacía por si sigue instalado el disparador de la versión anterior; autorizar() lo quita. */
+function alEditar() {}
+
+/** El servicio de una pestaña de PQRS ("PQRS Internet" → "Internet"); la pestaña "PQRS" de antes es del canal. */
+function servicioDeHoja_(nombre) {
+  if (nombre === HOJA_PQRS_ANTERIOR) return SERVICIO_POR_DEFECTO;
+  const servicio = SERVICIOS.find((s) => nombreHoja_(s) === nombre);
+  return servicio || '';
+}
+
 // ---------- Reportes por fechas (menú de la hoja) ----------
 
 const HOJA_REPORTE = 'Reporte';
@@ -480,7 +618,14 @@ const HOJA_REPORTE = 'Reporte';
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('PQRS')
     .addItem('Reporte entre fechas…', 'abrirReporte')
+    .addItem('Ajustar celdas al texto', 'ajustarFormato')
     .addToUi();
+  try {
+    // Así las filas nuevas (de la web o a mano) siempre quedan con el formato al abrir la hoja.
+    formatearPestanas_();
+  } catch (error) {
+    console.log('No se pudo ajustar el formato al abrir: ' + error);
+  }
 }
 
 function abrirReporte() {
