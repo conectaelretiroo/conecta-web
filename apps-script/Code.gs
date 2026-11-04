@@ -59,9 +59,9 @@ function hojaServicio_(servicio) {
   const libro = SpreadsheetApp.getActive();
   const nombre = nombreHoja_(servicio);
   let hoja = libro.getSheetByName(nombre);
-  if (hoja) return hoja;
+  if (hoja) return conColumnas_(hoja);
   const anterior = servicio === SERVICIO_POR_DEFECTO && libro.getSheetByName(HOJA_PQRS_ANTERIOR);
-  if (anterior) return anterior.setName(nombre);
+  if (anterior) return conColumnas_(anterior.setName(nombre));
   crearHoja_(libro, nombre, COLUMNAS);
   hoja = libro.getSheetByName(nombre);
   // Lista desplegable de estados en toda la columna (una pestaña nueva trae 1000 filas: no pasarse de ahí).
@@ -74,17 +74,34 @@ function hojaServicio_(servicio) {
   return hoja;
 }
 
+/** Si a la pestaña le borraron columnas del final, le devuelve las que necesita para escribir. */
+function conColumnas_(hoja) {
+  const faltan = COLUMNAS.length - hoja.getMaxColumns();
+  if (faltan > 0) hoja.insertColumnsAfter(hoja.getMaxColumns(), faltan);
+  return hoja;
+}
+
 /** Todas las filas de las tres pestañas, cada una con su servicio. */
 function filasPqrs_() {
   const filas = [];
   SERVICIOS.forEach((servicio) => {
     const hoja = hojaServicio_(servicio);
     if (hoja.getLastRow() < 2) return;
-    hoja.getRange(2, 1, hoja.getLastRow() - 1, COLUMNAS.length).getValues()
+    leerFilas_(hoja, 2, hoja.getLastRow() - 1)
       .filter((f) => f[COL['Radicado']])
       .forEach((f) => filas.push({ servicio: servicio, valores: f }));
   });
   return filas;
+}
+
+/**
+ * Lee filas de una pestaña de PQRS con todas sus columnas. Si a la pestaña le borraron
+ * columnas vacías del final, lee las que hay y completa el resto en blanco, en vez de fallar.
+ */
+function leerFilas_(hoja, desde, cantidad) {
+  const columnas = Math.min(COLUMNAS.length, hoja.getMaxColumns());
+  return hoja.getRange(desde, 1, cantidad, columnas).getValues()
+    .map((f) => f.concat(new Array(COLUMNAS.length - columnas).fill('')));
 }
 
 /** Ejecutar desde el editor después de cambiar permisos: pide la autorización y muestra los alias de Gmail. */
@@ -103,8 +120,10 @@ function crearHoja_(libro, nombre, encabezados) {
 
 function doPost(e) {
   let resultado;
+  let accion = '';
   try {
     const datos = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    accion = String(datos.accion || '');
     switch (datos.accion) {
       case 'radicar':
         resultado = { radicado: radicar_(datos.solicitud || {}) };
@@ -136,9 +155,12 @@ function doPost(e) {
     resultado.ok = true;
   } catch (error) {
     if (!(error instanceof ErrorPublico)) console.error(error);
+    // En el panel se muestra el detalle técnico, para saber qué corregir; al público no.
+    const panel = accion !== 'radicar' && accion !== 'envivo';
     resultado = {
       ok: false,
-      error: error instanceof ErrorPublico ? error.message : 'No pudimos procesar la solicitud. Intenta de nuevo.',
+      error: error instanceof ErrorPublico ? error.message
+        : 'No pudimos procesar la solicitud. Intenta de nuevo.' + (panel ? ' (Detalle: ' + (error && error.message || error) + ')' : ''),
       sesion: error instanceof ErrorPublico && error.sesion ? true : undefined,
     };
   }
@@ -561,7 +583,7 @@ function buscar_(radicado) {
     const celda = hoja.getRange('A:A').createTextFinder(radicado).matchEntireCell(true).findNext();
     if (!celda || celda.getRow() < 2) continue;
     const numero = celda.getRow();
-    return { hoja: hoja, numero: numero, servicio: SERVICIOS[i], valores: hoja.getRange(numero, 1, 1, COLUMNAS.length).getValues()[0] };
+    return { hoja: hoja, numero: numero, servicio: SERVICIOS[i], valores: leerFilas_(hoja, numero, 1)[0] };
   }
   return null;
 }
