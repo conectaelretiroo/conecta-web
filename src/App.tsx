@@ -5,6 +5,7 @@ import { canal } from "./data/canal";
 import { diaDeHoy, dias, fechaDeHoy, parrillaSemanal, proximaEmision } from "./data/parrilla";
 import { canales, categorias } from "./data/canales";
 import { programas } from "./data/programas";
+import { fotosInicio } from "./data/inicio";
 import { actualizarPQRS, ErrorPQRS, Estado, estados, EventoHistorial, listarPQRS, modoDemo, obtenerPQRS, radicarPQRS, Servicio, servicios, Solicitud } from "./services/pqrs";
 import { cerrarSesion, guardarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
 import { activarEnVivo, EnVivo, enlaceEmbebido, terminarEnVivo, useEnVivo } from "./services/envivo";
@@ -79,7 +80,7 @@ function Footer() {
   return (
     <footer className="footer" data-theme="dark">
       <div className="container footer-grid">
-        <div><Logo inverse /><Text>Televisión local hecha con y para la comunidad de El Retiro.</Text></div>
+        <div className="footer-brand"><Logo inverse /><Text>Televisión local hecha con y para la comunidad de El Retiro.</Text></div>
         <div><Text as="h3">Contacto</Text><Text>{canal.direccion}</Text><Text>{canal.telefono} · {canal.celular}</Text><Text>{canal.correo}</Text></div>
         <div><Text as="h3">Atención al ciudadano</Text><AppLink href="/pqrs">Radicar PQRS</AppLink><AppLink href="/programacion">Programación</AppLink><AppLink href="/politica-de-datos">Política de datos</AppLink></div>
         <div><Text as="h3">Síguenos</Text><Redes /></div>
@@ -134,10 +135,50 @@ function ProgramCarousel() {
   );
 }
 
+const whatsapp = (mensaje: string) => `https://wa.me/${canal.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(mensaje)}`;
+
+function Dots() {
+  return <span className="color-dots" aria-hidden="true"><i /><i /><i /><i /></span>;
+}
+
+/** Foto de una tarjeta de servicio. Sin foto todavía, queda un fondo de color con los aros de la marca. */
+function ServicePhoto({ foto }: { foto: { src: string; pie: string } }) {
+  const [falla, setFalla] = useState(false);
+  if (!foto.src || falla) return <div className="service-photo service-photo--empty" aria-hidden="true" />;
+  return <figure className="service-photo"><img src={foto.src} alt="" loading="lazy" onError={() => setFalla(true)} /><figcaption>{foto.pie}</figcaption></figure>;
+}
+
 function Home() {
-  // Inicio queda vacío a propósito (Tomás agregará contenido después). El en vivo ya no ocupa Inicio:
-  // se anuncia con el botón "Ver en vivo" del encabezado y el aviso pequeño de LiveNotice.
-  return <section className="section home-empty" />;
+  // Inicio: las dos tarjetas de servicios (Internet y Televisión). El en vivo se anuncia con el botón
+  // "Ver en vivo" del encabezado y el aviso pequeño de LiveNotice.
+  return (
+    <section className="section home-services">
+      <div className="container">
+        <Eyebrow>Servicios para tu hogar</Eyebrow>
+        <Text as="h1" className="home-title">Conecta con lo que te mueve</Text>
+        <div className="service-cards">
+          <article className="service-card service-card--internet">
+            <div className="service-card__body">
+              <div className="service-card__top"><Text className="service-card__label">01 · Internet</Text><Dots /></div>
+              <Text as="h2">Conecta tus ideas.<br />Conecta tu mundo.</Text>
+              <Text>Navega, estudia, trabaja y comparte con una conexión pensada para tu hogar.</Text>
+              <div className="button-row"><a href={whatsapp("Hola, quiero información sobre el servicio de internet de Conecta.")} target="_blank" rel="noopener noreferrer" className="button button--light">Quiero conectarme <Icon name="arrow" /></a></div>
+            </div>
+            <ServicePhoto foto={fotosInicio.internet} />
+          </article>
+          <article className="service-card service-card--tv">
+            <ServicePhoto foto={fotosInicio.television} />
+            <div className="service-card__body">
+              <div className="service-card__top"><Text className="service-card__label">02 · Televisión</Text><Dots /></div>
+              <Text as="h2">Conecta con historias.<br />Conecta con los tuyos.</Text>
+              <Text>Noticias, deporte, entretenimiento y la señal local que nos identifica.</Text>
+              <div className="button-row"><a href={whatsapp("Hola, quiero información sobre el servicio de televisión de Conecta.")} target="_blank" rel="noopener noreferrer" className="button button--secondary">Preguntar por televisión</a><AppLink href="/canales" className="button button--dark">Ver canales <Icon name="arrow" /></AppLink></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  );
 }
 
 // Aviso pequeño en una esquina mientras hay transmisión. Se puede cerrar y no vuelve a salir
@@ -174,7 +215,7 @@ function Programming() {
 }
 
 function Programs() {
-  return <><PageIntro eyebrow="Producción propia" title="Programas" tone="orange">Historias, información y conversaciones hechas desde El Retiro.</PageIntro><section className="section program-showcase"><div className="container"><ProgramCarousel /></div></section></>;
+  return <><PageBanner eyebrow="Producción propia" title="Programas" tag="Local" tone="gold">Historias, información y conversaciones hechas desde El Retiro.</PageBanner><section className="section program-showcase"><div className="container"><ProgramCarousel /></div></section></>;
 }
 
 function Channels() {
@@ -188,7 +229,12 @@ function Channels() {
     if (words.length > 1) return words.slice(0, 2).map((word) => word[0]).join("").toUpperCase();
     return /^[A-Z0-9]{2,4}$/.test(name) ? name : name.slice(0, 2).toUpperCase();
   };
-  return <><PageIntro eyebrow="Servicio de parabólica" title="Canales" tone="cyan">Estos son los canales que recibes con el servicio de televisión de Conecta Digital.</PageIntro><section className="section"><div className="container"><div className="channel-tools"><div className="tabs" role="tablist">{categories.map((item) => <button role="tab" aria-selected={item === category} className={item === category ? "active" : ""} onClick={() => setCategory(item)} key={item}>{item}</button>)}</div><label className="search"><Icon name="search" /><input placeholder="Buscar por nombre o número" value={query} onChange={(e) => setQuery(e.target.value)} /></label></div>{visible.length ? <div className="channel-grid">{visible.map((canal) => <article className="channel-card" key={canal.numero}><span className="channel-number">{canal.numero}</span><div className={`channel-logo${canal.logoOscuro ? " channel-logo--dark" : ""}`}>{canal.logo ? <img src={canal.logo} alt="" loading="lazy" /> : <span>{initials(canal.nombre)}</span>}</div><div><Text as="h3">{canal.nombre}</Text><Text>{canal.categoria}</Text></div></article>)}</div> : <Text>No encontramos canales con esa búsqueda.</Text>}</div></section></>;
+  return <><PageBanner eyebrow="Servicio de televisión" title="Canales" tag="TV" /><section className="section"><div className="container"><div className="channel-tools"><div className="tabs" role="tablist">{categories.map((item) => <button role="tab" aria-selected={item === category} className={item === category ? "active" : ""} onClick={() => setCategory(item)} key={item}>{item}</button>)}</div><label className="search"><Icon name="search" /><input placeholder="Buscar por nombre o número" value={query} onChange={(e) => setQuery(e.target.value)} /></label></div>{visible.length ? <div className="channel-grid">{visible.map((canal) => <article className="channel-card" key={canal.numero}><span className="channel-number">{canal.numero}</span><div className={`channel-logo${canal.logoOscuro ? " channel-logo--dark" : ""}`}>{canal.logo ? <img src={canal.logo} alt="" loading="lazy" /> : <span>{initials(canal.nombre)}</span>}</div><div><Text as="h3">{canal.nombre}</Text><Text>{canal.categoria}</Text></div></article>)}</div> : <Text>No encontramos canales con esa búsqueda.</Text>}</div></section></>;
+}
+
+/** Encabezado corto de Canales y Programas: bloque verde con el título y una franja clara con el texto. */
+function PageBanner({ eyebrow, title, tag, tone = "teal", children }: { eyebrow: string; title: string; tag: string; tone?: "teal" | "gold"; children?: ReactNode }) {
+  return <section className="page-banner"><div className="container"><div className={`banner-card banner-card--${tone}`}><div className="banner-main"><Eyebrow>{eyebrow}</Eyebrow><Text as="h1">{title}</Text></div><div className="banner-side">{children && <Text className="banner-text">{children}</Text>}<span className="banner-lines" aria-hidden="true"><i /><i /><i /><i /></span><span className="banner-tag" aria-hidden="true">{tag}</span></div></div></div></section>;
 }
 
 function PageIntro({ eyebrow, title, tone = "teal", children }: { eyebrow: string; title: string; tone?: "teal" | "cyan" | "orange" | "green"; children: ReactNode }) {
@@ -245,7 +291,18 @@ function Pqrs() {
     }
   };
   if (sent) return <><PageIntro eyebrow="Atención al ciudadano" title="Solicitud radicada" tone="green">Guarda este número de radicado para cualquier comunicación con el canal.</PageIntro><section className="section"><div className="container confirmation"><span className="success-icon"><Icon name="check" /></span><Text as="h2">Recibimos tu solicitud</Text><div className="ticket">{sent}<Button variant="ghost" onClick={() => navigator.clipboard?.writeText(sent)}><Icon name="copy" /> Copiar</Button></div><Text>Te enviamos una confirmación a tu correo y por ese medio recibirás la respuesta.</Text><Button onClick={() => setSent("")}>Radicar otra solicitud</Button></div></section></>;
-  return <><PageIntro eyebrow="Atención al ciudadano" title="Peticiones, quejas, reclamos y sugerencias">Radica tu solicitud y recibe un número de radicado.</PageIntro><section className="section"><div className="container form-layout"><form className="form-card" onSubmit={submit}><Text as="h2">Radicar solicitud</Text>{modoDemo && <p className="form-notice">Formulario en modo de prueba: las solicitudes todavía no se guardan.</p>}<fieldset><legend>¿Sobre qué servicio es? *</legend><div className="service-options">{servicios.map((item) => <button type="button" aria-pressed={service === item.valor} className={service === item.valor ? "active" : ""} onClick={() => { setService(item.valor); setError(""); }} key={item.valor}><strong>{item.titulo}</strong><span>{item.texto}</span></button>)}</div></fieldset><fieldset><legend>Tipo de solicitud</legend><div className="chips">{["Petición", "Queja", "Reclamo", "Sugerencia", "Felicitación"].map((item) => <button type="button" aria-pressed={type === item} className={type === item ? "active" : ""} onClick={() => setType(item)} key={item}>{item}</button>)}</div></fieldset><div className="field-grid"><Field label="Nombre completo" name="nombre" required maxLength={120} /><Field label="Correo electrónico" name="correo" type="email" required maxLength={254} help="Aquí te enviaremos la respuesta." /><Field label="Teléfono (opcional)" name="telefono" type="tel" maxLength={30} /><Field label="Barrio o vereda" name="ubicacion" required maxLength={120} /></div><Field label="Asunto" name="asunto" required maxLength={150} /><label className="field"><span>Descripción *</span><textarea name="descripcion" required maxLength={4800} value={description} onChange={(e) => setDescription(e.target.value)} /><small>{description.length} de 4.800 caracteres</small></label><label className="trap" aria-hidden="true">Sitio web<input name="sitio" tabIndex={-1} autoComplete="off" /></label><label className="checkbox"><input type="checkbox" name="autorizacion" required /><span>Autorizo el tratamiento de mis datos personales según la <AppLink href="/politica-de-datos">política de tratamiento de datos</AppLink>.</span></label>{turnstileActivo && <div ref={casilla} className="captcha" />}{error && <p className="form-error" role="alert">{error}</p>}<Button type="submit" disabled={sending}>{sending ? "Enviando…" : "Enviar solicitud"}</Button></form><aside className="help-column"><article><Text as="h3">¿Qué tipo de solicitud elegir?</Text><Text><strong>Petición:</strong> solicita información o una gestión.</Text><Text><strong>Queja:</strong> expresa inconformidad con la atención.</Text><Text><strong>Reclamo:</strong> pide corregir una situación.</Text><Text><strong>Sugerencia:</strong> propone una mejora.</Text></article><article><Text as="h3">Otros canales de atención</Text><Text>{canal.direccion}</Text><Text>{canal.telefono} · {canal.celular}</Text><Text>{canal.correo}</Text></article></aside></div></section></>;
+  return <section className="section pqrs-page"><div className="container form-layout">
+    <form className="pqrs-form" onSubmit={submit}>
+      <div className="pqrs-head" data-theme="dark"><Text className="pqrs-kicker">Formulario paso a paso</Text><Text as="h1">Cuéntanos cómo podemos ayudarte</Text><Text>Completa la información con calma. Los campos marcados con * son obligatorios.</Text></div>
+      <div className="pqrs-steps">
+        {modoDemo && <p className="form-notice">Formulario en modo de prueba: las solicitudes todavía no se guardan.</p>}
+        <fieldset className="pqrs-step"><legend className="step-title"><span className="step-number">1</span>Elige el servicio <span className="step-badge">Obligatorio</span></legend><Text className="step-help">Selecciona el servicio relacionado con tu solicitud.</Text><div className="service-options">{servicios.map((item) => <button type="button" aria-pressed={service === item.valor} className={service === item.valor ? "active" : ""} onClick={() => { setService(item.valor); setError(""); }} key={item.valor}><strong>{item.titulo}</strong><span>{item.texto}</span></button>)}</div></fieldset>
+        <fieldset className="pqrs-step"><legend className="step-title"><span className="step-number">2</span>Tipo de solicitud</legend><Text className="step-help">Elige la opción que mejor describe lo que necesitas.</Text><div className="chips chips--solid">{["Petición", "Queja", "Reclamo", "Sugerencia", "Felicitación"].map((item) => <button type="button" aria-pressed={type === item} className={type === item ? "active" : ""} onClick={() => setType(item)} key={item}>{item}</button>)}</div></fieldset>
+        <fieldset className="pqrs-step"><legend className="step-title"><span className="step-number">3</span>Tus datos y solicitud</legend><Text className="step-help">Cuéntanos quién eres y explica lo sucedido con claridad.</Text><div className="pqrs-fields"><div className="field-grid"><Field label="Nombre completo" name="nombre" required maxLength={120} /><Field label="Correo electrónico" name="correo" type="email" required maxLength={254} help="Aquí te enviaremos la respuesta." /><Field label="Teléfono (opcional)" name="telefono" type="tel" maxLength={30} /><Field label="Barrio o vereda" name="ubicacion" required maxLength={120} /></div><Field label="Asunto" name="asunto" required maxLength={150} /><label className="field"><span>Descripción *</span><textarea name="descripcion" required maxLength={4800} value={description} onChange={(e) => setDescription(e.target.value)} /><small>{description.length} de 4.800 caracteres</small></label><label className="trap" aria-hidden="true">Sitio web<input name="sitio" tabIndex={-1} autoComplete="off" /></label><label className="checkbox"><input type="checkbox" name="autorizacion" required /><span>Autorizo el tratamiento de mis datos personales según la <AppLink href="/politica-de-datos">política de tratamiento de datos</AppLink>.</span></label>{turnstileActivo && <div ref={casilla} className="captcha" />}{error && <p className="form-error" role="alert">{error}</p>}<Button type="submit" disabled={sending}>{sending ? "Enviando…" : "Enviar solicitud"}</Button></div></fieldset>
+      </div>
+    </form>
+    <aside className="help-column pqrs-help"><article className="help-card"><Text className="help-kicker">Guía rápida</Text><Text as="h3">¿Qué tipo de solicitud elegir?</Text><Text><strong>Petición:</strong> solicita información o una gestión.</Text><Text><strong>Queja:</strong> expresa inconformidad con la atención.</Text><Text><strong>Reclamo:</strong> pide corregir una situación.</Text><Text><strong>Sugerencia:</strong> propone una mejora.</Text></article><article className="help-card help-card--contact"><Text className="help-kicker">Contacto</Text><Text as="h3">Otros canales de atención</Text><Text>{canal.direccion}</Text><Text>{canal.telefono} · {canal.celular}</Text><Text>{canal.correo}</Text></article></aside>
+  </div></section>;
 }
 
 function formatDate(value: string) {
