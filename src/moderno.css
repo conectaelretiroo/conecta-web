@@ -1,0 +1,131 @@
+/* Estilo moderno (nov 2026): letras grandes, más aire, superficies limpias sin bordes,
+   botones y pestañas redondeadas. Conserva colores, logo y letras de Conecta.
+   Esta hoja va encima de index.css: para volver al estilo anterior basta quitar su import en main.tsx. */
+
+:root {
+  --page: #f5f6f5;
+  --radius-s: 0.75rem;
+  --radius-m: 1.125rem;
+  --radius-l: 1.75rem;
+  --shadow-soft: 0 0.25rem 1.5rem rgb(30 31 25 / 4%);
+  --shadow-card: 0 0.75rem 2.25rem rgb(30 31 25 / 8%);
+}
+body { background: var(--page); -webkit-font-smoothing: antialiased; }
+.section { background: transparent; padding-block: 5.5rem; }
+h1, h2, h3 { letter-spacing: -0.028em; line-height: 1.08; }
+h1 { font-size: clamp(2.25rem, 5.5vw, 3.5rem); }
+h2 { font-size: clamp(1.875rem, 4.2vw, 2.75rem); }
+p { line-height: 1.5; }
+.lead { font-size: 1.25rem; }
+
+/* Botones: cápsulas planas */
+.button { min-height: 2.75rem; padding: 0.7rem 1.35rem; border-radius: 99rem; }
+.button--primary, .button--primary:hover { background: var(--teal); box-shadow: none; }
+@media (hover: hover) and (pointer: fine) { .button--primary:hover { background: var(--teal-hover); box-shadow: none; } }
+.button--secondary { border-color: color-mix(in srgb, var(--ink) 22%, transparent); }
+
+/* Encabezado: barra clara y delgada */
+.site-header { background: color-mix(in srgb, var(--page) 80%, transparent); box-shadow: none; border-bottom-color: rgb(30 31 25 / 8%); }
+.header-inner { min-height: 4rem; }
+.main-nav { gap: 2rem; }
+.main-nav > a:not(.button)::after { display: none; }
+.main-nav > a:not(.button) { color: color-mix(in srgb, var(--ink) 78%, transparent); }
+.main-nav > a.active { color: var(--teal); font-weight: 600; }
+@media (hover: hover) and (pointer: fine) { .main-nav > a:not(.button):hover { color: var(--ink); } }
+
+/* Inicio: título grande y centrado */
+.home-services { padding-block: 4.5rem 2rem; }
+.home-head { grid-template-columns: 1fr; justify-items: center; gap: 1.25rem; margin-bottom: 3.5rem; text-align: center; }
+.home-head .eyebrow { justify-content: center; }
+.home-title { max-width: 18ch; font-size: clamp(2.6rem, 7vw, 4.5rem); line-height: 1.03; letter-spacing: -0.035em; }
+.home-aside > p { max-width: 36rem; font-size: 1.25rem; color: var(--secondary); }
+.home-aside .button-row { justify-content: center; margin-top: 1.75rem; }
+.service-cards { gap: 1.25rem; }
+.service-card, .service-card--tv { border: 0; box-shadow: none; }
+.service-card__body { padding: 2.5rem 2.5rem 2.25rem; }
+.service-card h2 { font-size: clamp(1.75rem, 3.2vw, 2.4rem); line-height: 1.08; }
+.service-card__body > p:not(.service-card__label) { font-size: 1.0625rem; }
+.service-card--internet .service-card__body { background: var(--teal); }
+.service-card--tv .button--secondary { border-color: color-mix(in srgb, var(--ink) 22%, transparent); }
+.service-photo { height: 20rem; }
+
+/* Bloque local, pasos y preguntas */
+.home-local { padding-block: 1.25rem 0; background: transparent; border: 0; }
+.home-local__grid { padding: 3.5rem; border-radius: var(--radius-l); background: var(--white); }
+.home-steps { padding-block: 6.5rem 5rem; }
+.home-steps h2, .home-faq h2 { font-size: clamp(2rem, 4.5vw, 3rem); }
+.steps { margin-top: 3rem; gap: 1.25rem; }
+.steps li { padding: 2rem; border: 0; border-radius: var(--radius-l); background: var(--white); }
+.steps__n { margin-bottom: 2.5rem; font-size: 2.5rem; }
+.steps h3 { font-size: 1.25rem; }
+.steps p { font-size: 1rem; }
+.home-faq { padding-bottom: 7rem; }
+.home-faq__grid { border-top: 0; padding-top: 1rem; }
+.faq summary { padding-block: 1.35rem; font-size: 1.0625rem; }
+
+/* Encabezado corto de Canales y Programas */
+.page-banner { padding-block: 2rem 0; background: transparent; border: 0; }
+.banner-card { border: 0; box-shadow: none; }
+.page-banner + .section { padding-top: 2.5rem; }
+
+/* Pestañas como control segmentado */
+.tabs { width: fit-content; max-width: 100%; padding: 0.25rem; gap: 0.125rem; border: 0; border-radius: 99rem; background: #e7e9e7; }
+.tabs button { padding: 0.55rem 1.1rem; border: 0; border-radius: 99rem; font-size: 0.9375rem; }
+.tabs button.active { color: var(--ink); background: var(--white); box-shadow: 0 0.1rem 0.5rem rgb(30 31 25 / 10%); }
+.chips button { border-color: transparent; background: #e7e9e7; }
+.chips--solid button { background: #eceeec; }
+
+/* Tarjetas: superficies blancas sin borde */
+.channel-card, .schedule-card, .program-card, .form-card, .login-card, .help-column article { border: 0; box-shadow: none; }
+.schedule-card, .program-card { border-top: 0; }
+@media (hover: hover) and (pointer: fine) { .schedule-card:hover, .program-card:hover { box-shadow: var(--shadow-card); } }
+.channel-card { padding: 1.1rem 1.35rem; }
+.program-showcase { background: transparent; }
+.featured-program { border: 0; box-shadow: none; }
+.featured-copy { border-left: 0; }
+.featured-copy h3 { font-size: clamp(1.9rem, 3.6vw, 2.75rem); line-height: 1.05; }
+.carousel-arrow { border: 0; box-shadow: 0 0.25rem 1.25rem rgb(30 31 25 / 12%); }
+.progress-bars button { width: 0.5rem; height: 0.5rem; border-radius: 50%; }
+.progress-bars button.active { width: 1.75rem; border-radius: 99rem; background: var(--teal); transform: none; }
+.table-wrap { border: 0; background: var(--white); }
+
+/* Formularios */
+.pqrs-form { border: 0; box-shadow: none; background: var(--white); }
+.pqrs-head { padding: 2.5rem 2.25rem 2.75rem; background: var(--teal); }
+.pqrs-head h1 { max-width: 30rem; font-size: clamp(1.9rem, 4vw, 2.6rem); }
+.pqrs-head p { font-size: 1rem; }
+.pqrs-steps { padding: 1.75rem 1.5rem 2rem; }
+.pqrs-step { border-color: #e4e6e3; box-shadow: none; }
+.pqrs-help .help-card, .help-card--contact { border: 0 !important; background: var(--white) !important; }
+.field input, .field textarea, .field select, .search input { padding: 0.85rem 1rem; border-color: #d3d5d1; border-radius: var(--radius-s); transition: border-color 160ms ease, box-shadow 160ms ease; }
+.field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible, .search input:focus-visible { outline: 0; border-color: var(--teal); box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--teal) 18%, transparent); }
+.service-options button { border-color: #e4e6e3; }
+
+/* Encabezados largos (Programación, panel, política) */
+.page-intro { padding-block: 5rem 3rem; background: transparent; border-bottom: 0; }
+.page-intro::before, .page-intro::after { display: none; }
+.page-intro .narrow { padding-left: 0; border-left: 0; }
+
+@media (max-width: 56rem) {
+  .section { padding-block: 3.5rem; }
+  .home-services { padding-block: 2.5rem 1rem; }
+  .home-head { margin-bottom: 2.25rem; }
+  .home-aside > p { font-size: 1.0625rem; }
+  .home-aside .button-row { display: flex; }
+  .service-card__body { padding: 2rem 1.5rem 1.75rem; }
+  .service-photo { height: 15rem; }
+  .home-local__grid { padding: 2rem 1.5rem; }
+  .home-steps { padding-block: 4rem 3rem; }
+  .steps li { padding: 1.5rem; }
+  .steps__n { margin-bottom: 1.25rem; }
+  .home-faq { padding-bottom: 4.5rem; }
+  .pqrs-head { padding: 2rem 1.5rem; }
+  .tabs { width: auto; border-radius: 1.25rem; }
+}
+.banner-card, .banner-card--gold { background: var(--white); }
+.banner-text { border: 0; background: var(--page); }
+.progress-bars { gap: 0.5rem; align-items: center; }
+.progress-bars button, .progress-bars button:hover { background: #cfd2ce; transform: none; }
+.progress-bars button.active { background: var(--teal); }
+.section.pqrs-page { padding-top: 2.5rem; }
+@media (max-width: 56rem) { .section.pqrs-page { padding-top: 1.5rem; } }
