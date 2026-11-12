@@ -2,8 +2,8 @@
 // Poner el archivo en public/inicio/ y escribir aquí su ruta (por ejemplo "/inicio/internet.jpg").
 // "pie" describe la foto para quien no puede verla. Lo mejor es una foto horizontal (16:9), de 1200 px de ancho o más.
 export const fotosInicio = {
-  internet: { src: "", pie: "Internet que acerca" },
-  television: { src: "", pie: "Televisión para compartir" },
+  internet: { src: "/inicio/internet.jpg", pie: "Joven trabajando en su portátil junto a una ventana con vista a las montañas" },
+  television: { src: "/inicio/television.jpg", pie: "Abuela y nieto celebrando un gol frente al televisor en la sala" },
 };
 
 // "Así te conectas": los tres pasos de Inicio.
