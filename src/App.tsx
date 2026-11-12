@@ -140,7 +140,7 @@ const whatsapp = (mensaje: string) => `https://wa.me/${canal.whatsapp.replace(/\
 /** Foto de una tarjeta de servicio. Sin foto todavía, queda un fondo de color con los aros de la marca. */
 function ServicePhoto({ foto }: { foto: { src: string; pie: string } }) {
   const [falla, setFalla] = useState(false);
-  if (!foto.src || falla) return <div className="service-photo service-photo--empty" aria-hidden="true" />;
+  if (!foto.src || falla) return null; // sin foto no se muestra nada: el espacio aparece cuando se agregue la foto
   return <figure className="service-photo"><img src={foto.src} alt="" loading="lazy" onError={() => setFalla(true)} /><figcaption>{foto.pie}</figcaption></figure>;
 }
 

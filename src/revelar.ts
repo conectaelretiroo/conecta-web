@@ -2,8 +2,7 @@
 // la primera vez que entra en pantalla. Lo que ya está a la vista al cargar no se anima.
 // Con "reducir movimiento" activado en el dispositivo no se anima nada.
 const SELECTOR = [
-  ".service-card", ".home-local__grid", ".home-steps h2", ".steps li", ".home-faq__grid",
-  ".featured-program", ".schedule-card", ".program-card", ".section-heading", ".help-card", ".legal > *",
+  ".home-local__grid", ".steps", ".home-faq__grid", ".schedule-card", ".program-card",
 ].join(",");
 
 export function activarRevelado() {

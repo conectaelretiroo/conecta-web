@@ -186,3 +186,22 @@ body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-even
   .service-card--tv .service-card__body { background: var(--orange-soft); }
   .steps li { background: rgb(255 255 255 / 92%); }
 }
+
+/* Menos aspecto de plantilla:
+   - Los tres pasos son una sola franja con divisiones, no tres tarjetas iguales.
+   - Las animaciones al bajar son cortas y solo en bloques grandes.
+   - Sin foto, las tarjetas de servicio no muestran adornos de relleno. */
+.steps { gap: 0; border-radius: var(--radius-l); background: rgb(255 255 255 / 46%); -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%); border: 0.0625rem solid rgb(255 255 255 / 70%); box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 7%); }
+.steps li { display: grid; grid-template-columns: auto 1fr; column-gap: 1rem; align-content: start; padding: 2.25rem 2rem; border: 0; border-radius: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; }
+.steps li + li { border-left: 0.0625rem solid rgb(17 92 87 / 12%); }
+.steps__n { grid-row: span 2; margin: 0; font-size: 1.25rem; line-height: 1.5rem; color: color-mix(in srgb, var(--teal) 70%, transparent); font-variant-numeric: tabular-nums; }
+.steps__n::after { content: "."; }
+.steps h3 { font-size: 1.125rem; line-height: 1.5rem; }
+.steps p { grid-column: 2; }
+.service-card .button-row { padding-top: 2.5rem; }
+.reveal { transform: translateY(0.5rem); transition-duration: 420ms; }
+@media (max-width: 56rem) {
+  .steps li { padding: 1.5rem; }
+  .steps li + li { border-left: 0; border-top: 0.0625rem solid rgb(17 92 87 / 12%); }
+}
+@supports not ((backdrop-filter: blur(1rem)) or (-webkit-backdrop-filter: blur(1rem))) { .steps { background: rgb(255 255 255 / 92%); } .steps li { background: none; } }
