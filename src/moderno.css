@@ -150,7 +150,7 @@ body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-even
     radial-gradient(22rem 18rem at 100% 96%, color-mix(in srgb, var(--orange) 20%, transparent), transparent 70%),
     radial-gradient(20rem 16rem at 0% 80%, color-mix(in srgb, var(--pink) 9%, transparent), transparent 70%); }
 }
-.site-header { background: color-mix(in srgb, var(--white) 62%, transparent); }
+.site-header { background: color-mix(in srgb, var(--white) 80%, transparent); }
 
 /* Animaciones al bajar (ver src/revelar.ts) */
 .reveal { opacity: 0; transform: translateY(1.25rem); transition: opacity 600ms var(--ease-out) var(--revelar-espera, 0ms), transform 600ms var(--ease-out) var(--revelar-espera, 0ms); }
@@ -172,4 +172,17 @@ body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-even
 /* Sin soporte de desenfoque, el banner queda casi opaco para que el texto se lea igual. */
 @supports not ((backdrop-filter: blur(1rem)) or (-webkit-backdrop-filter: blur(1rem))) {
   .banner-card, .banner-card--gold, .home-local__grid { background: rgb(255 255 255 / 92%); }
+}
+
+/* Vidrio suave en los bloques de Inicio: tarjetas de Internet y Televisión, bloque local y pasos. */
+.service-card { background: transparent; border: 0.0625rem solid rgb(255 255 255 / 55%); box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 7%); }
+.service-card--internet .service-card__body { background: color-mix(in srgb, var(--teal) 90%, transparent); -webkit-backdrop-filter: blur(1.25rem) saturate(160%); backdrop-filter: blur(1.25rem) saturate(160%); }
+.service-card--tv .service-card__body { background: color-mix(in srgb, var(--orange-soft) 68%, transparent); -webkit-backdrop-filter: blur(1.25rem) saturate(160%); backdrop-filter: blur(1.25rem) saturate(160%); }
+.service-photo--empty { opacity: 0.8; }
+.home-local__grid { background: rgb(255 255 255 / 58%); }
+.steps li { background: rgb(255 255 255 / 58%); -webkit-backdrop-filter: blur(1.25rem) saturate(160%); backdrop-filter: blur(1.25rem) saturate(160%); border: 0.0625rem solid rgb(255 255 255 / 70%); box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 7%), inset 0 0.0625rem 0 rgb(255 255 255 / 80%); }
+@supports not ((backdrop-filter: blur(1rem)) or (-webkit-backdrop-filter: blur(1rem))) {
+  .service-card--internet .service-card__body { background: var(--teal); }
+  .service-card--tv .service-card__body { background: var(--orange-soft); }
+  .steps li { background: rgb(255 255 255 / 92%); }
 }

@@ -152,7 +152,7 @@ function Home() {
     <section className="section home-services">
       <div className="container">
         <div className="home-head">
-          <div><Eyebrow>Servicios para tu hogar</Eyebrow><Text as="h1" className="home-title">Conecta con lo que te mueve</Text></div>
+          <div><Text as="h1" className="home-title">Conecta con lo que te mueve</Text></div>
           <div className="home-aside">
             <Text>Internet y televisión para los hogares de El Retiro. Escríbenos y te contamos qué hay disponible en tu barrio o vereda.</Text>
             <div className="button-row"><a href={whatsapp("Hola, quiero información sobre los servicios de Conecta.")} target="_blank" rel="noopener noreferrer" className="button button--primary">Escríbenos por WhatsApp <Icon name="arrow" /></a><AppLink href="/canales" className="button button--secondary">Ver canales</AppLink></div>
