@@ -9,7 +9,7 @@ export const canal = {
   correo: "contacto@conectaelretiro.tv",
   // Datos por definir: mientras estén vacíos no se muestran en la página.
   razonSocial: "",
-  nit: "",
+  nit: "811.010.428-3",
   horario: "", // por ejemplo "Lunes a viernes 8:00 a. m. a 5:00 p. m."
   desde: "", // año en que Conecta empezó a atender El Retiro, por ejemplo "1998"
   youtubeLive: "",
