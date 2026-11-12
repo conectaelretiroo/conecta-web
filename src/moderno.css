@@ -226,3 +226,38 @@ body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-even
 .service-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .service-photo--pendiente { display: grid; place-items: center; padding: 1rem; text-align: center; font-size: 0.875rem; font-weight: 500; box-shadow: none; border: 0.09rem dashed currentColor; background: transparent; opacity: 0.6; }
 @media (max-width: 56rem) { .service-photo { height: auto; margin-top: 1.5rem; } }
+
+/* Prueba de velocidad (/velocidad) */
+.speed-page { padding-block: 4rem 6rem; }
+.speed { max-width: 60rem; }
+.speed h1 { font-size: clamp(2.4rem, 6vw, 4rem); letter-spacing: -0.035em; }
+.speed__lead { max-width: 34rem; margin: 1rem 0 2.5rem; font-size: 1.25rem; color: var(--secondary); }
+.speed__panel { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); border-radius: var(--radius-l); overflow: hidden; background: rgb(255 255 255 / 46%); -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%); border: 0.0625rem solid rgb(255 255 255 / 70%); box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 8%); }
+.speed__main { padding: 2.75rem; }
+.speed__label, .speed__datos dt { font-size: 0.875rem; font-weight: 600; color: color-mix(in srgb, var(--teal) 75%, var(--ink)); }
+.speed__number { display: flex; align-items: baseline; gap: 0.6rem; margin: 0.25rem 0 0; line-height: 1; }
+.speed__number strong { font-family: Poppins, sans-serif; font-size: clamp(4.5rem, 14vw, 8rem); font-weight: 600; letter-spacing: -0.045em; font-variant-numeric: tabular-nums; color: var(--teal); }
+.speed__number span { font-size: 1.5rem; font-weight: 600; color: var(--secondary); }
+.speed__status { min-height: 1.5rem; margin: 1rem 0 1.75rem; color: var(--secondary); }
+.speed__status.is-running { color: var(--teal); font-weight: 500; }
+.speed__main .button { min-width: 11rem; min-height: 3.25rem; font-size: 1.0625rem; }
+.speed__datos { margin: 0; display: grid; align-content: center; padding: 1.5rem 2.75rem; border-left: 0.0625rem solid rgb(17 92 87 / 12%); }
+.speed__datos > div { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; padding-block: 1.1rem; }
+.speed__datos > div + div { border-top: 0.0625rem solid rgb(17 92 87 / 12%); }
+.speed__datos dd { margin: 0; color: var(--secondary); font-variant-numeric: tabular-nums; }
+.speed__datos dd strong { font-family: Poppins, sans-serif; font-size: 1.75rem; font-weight: 600; color: var(--ink); letter-spacing: -0.02em; }
+.speed__notas { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 3.5rem; }
+.speed__notas h2 { font-size: 1.25rem; letter-spacing: -0.02em; }
+.speed__notas ul { margin: 1rem 0 0; padding-left: 1.1rem; display: grid; gap: 0.6rem; color: var(--secondary); line-height: 1.5; }
+.speed__legal { max-width: 46rem; margin: 3rem 0 0; font-size: 0.8125rem; color: var(--muted); }
+.service-card--internet .button--ghost { color: var(--white); text-decoration: underline; text-underline-offset: 0.25em; text-decoration-color: rgb(255 255 255 / 45%); }
+@media (max-width: 56rem) {
+  .speed-page { padding-block: 2.5rem 4rem; }
+  .speed__lead { font-size: 1.0625rem; margin-bottom: 1.75rem; }
+  .speed__panel { grid-template-columns: 1fr; }
+  .speed__main { padding: 1.75rem 1.5rem; }
+  .speed__datos { padding: 0.5rem 1.5rem 1rem; border-left: 0; border-top: 0.0625rem solid rgb(17 92 87 / 12%); }
+  .speed__notas { grid-template-columns: 1fr; gap: 2rem; margin-top: 2.5rem; }
+  .speed__main .button { width: 100%; }
+}
+@supports not ((backdrop-filter: blur(1rem)) or (-webkit-backdrop-filter: blur(1rem))) { .speed__panel { background: rgb(255 255 255 / 92%); } }

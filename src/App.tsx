@@ -6,6 +6,7 @@ import { diaDeHoy, dias, fechaDeHoy, parrillaSemanal, proximaEmision } from "./d
 import { canales, categorias } from "./data/canales";
 import { programas } from "./data/programas";
 import { fotosInicio, pasosInicio, preguntasInicio } from "./data/inicio";
+import { Velocidad } from "./Velocidad";
 import { actualizarPQRS, ErrorPQRS, Estado, estados, EventoHistorial, listarPQRS, modoDemo, obtenerPQRS, radicarPQRS, Servicio, servicios, Solicitud } from "./services/pqrs";
 import { cerrarSesion, guardarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
 import { activarEnVivo, EnVivo, enlaceEmbebido, esFacebook, terminarEnVivo, useEnVivo } from "./services/envivo";
@@ -168,7 +169,7 @@ function Home() {
               <Text className="service-card__label">Internet</Text>
               <Text as="h2">Conecta tus ideas.<br />Conecta tu mundo.</Text>
               <Text>Navega, estudia, trabaja y comparte con una conexión pensada para tu hogar.</Text>
-              <div className="button-row"><a href={whatsapp("Hola, quiero información sobre el servicio de internet de Conecta.")} target="_blank" rel="noopener noreferrer" className="button button--light">Quiero conectarme <Icon name="arrow" /></a></div>
+              <div className="button-row"><a href={whatsapp("Hola, quiero información sobre el servicio de internet de Conecta.")} target="_blank" rel="noopener noreferrer" className="button button--light">Quiero conectarme <Icon name="arrow" /></a><AppLink href="/velocidad" className="button button--ghost">Prueba tu velocidad</AppLink></div>
               <ServicePhoto foto={fotosInicio.internet} nombre="Internet" />
             </div>
           </article>
@@ -498,6 +499,6 @@ export default function App() {
   const [path, setPath] = useState(window.location.pathname);
   useEffect(() => { const update = () => setPath(window.location.pathname); window.addEventListener("popstate", update); return () => window.removeEventListener("popstate", update); }, []);
   useEffect(() => actualizarSeo(path), [path]);
-  const pages: Record<string, ReactNode> = { "/": <Home />, "/en-vivo": <Live />, "/programacion": <Programming />, "/programas": <Programs />, "/canales": <Channels />, "/pqrs": <Pqrs />, "/admin": <Admin />, "/politica-de-datos": <Policy /> };
+  const pages: Record<string, ReactNode> = { "/": <Home />, "/en-vivo": <Live />, "/programacion": <Programming />, "/programas": <Programs />, "/canales": <Channels />, "/velocidad": <Velocidad />, "/pqrs": <Pqrs />, "/admin": <Admin />, "/politica-de-datos": <Policy /> };
   return <><Header path={path} /><main>{pages[path] ?? <NotFound />}</main><Footer /><LiveNotice path={path} /></>;
 }

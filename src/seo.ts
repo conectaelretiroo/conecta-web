@@ -8,6 +8,7 @@ const paginas: Record<string, { titulo: string; descripcion: string }> = {
   "/programacion": { titulo: "Programación · Conecta El Retiro", descripcion: "Horarios de la programación semanal del canal Conecta El Retiro." },
   "/programas": { titulo: "Programas · Conecta El Retiro", descripcion: "Programas propios del canal Conecta El Retiro: historias, información y conversaciones hechas desde El Retiro." },
   "/canales": { titulo: "Canales de televisión · Conecta El Retiro", descripcion: "Lista de canales del servicio de televisión de Conecta Digital en El Retiro, Antioquia." },
+  "/velocidad": { titulo: "Prueba tu velocidad · Conecta El Retiro", descripcion: "Mide la velocidad de bajada, subida y la latencia de tu conexión a internet desde la página de Conecta El Retiro." },
   "/pqrs": { titulo: "PQRS · Conecta El Retiro", descripcion: "Radica tus peticiones, quejas, reclamos o sugerencias sobre internet, televisión o el canal Conecta El Retiro." },
   "/politica-de-datos": { titulo: "Política de datos · Conecta El Retiro", descripcion: "Política de tratamiento de datos personales de Conecta Telecomunicaciones." },
   "/admin": { titulo: "Panel · Conecta El Retiro", descripcion: "" },
