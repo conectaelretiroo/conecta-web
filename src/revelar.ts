@@ -45,3 +45,11 @@ export function activarRevelado() {
   }).observe(raiz, { childList: true, subtree: true });
   preparar();
 }
+
+// Barra de arriba integrada: transparente mientras la página está arriba del todo
+// y con fondo de vidrio apenas se empieza a bajar.
+export function activarBarra() {
+  const marcar = () => document.documentElement.toggleAttribute("data-bajando", window.scrollY > 8);
+  window.addEventListener("scroll", marcar, { passive: true });
+  marcar();
+}

@@ -205,3 +205,16 @@ body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-even
   .steps li + li { border-left: 0; border-top: 0.0625rem solid rgb(17 92 87 / 12%); }
 }
 @supports not ((backdrop-filter: blur(1rem)) or (-webkit-backdrop-filter: blur(1rem))) { .steps { background: rgb(255 255 255 / 92%); } .steps li { background: none; } }
+
+/* Barra de arriba integrada: sin fondo ni línea mientras la página está arriba (se funde con el fondo de luces);
+   al bajar pasa a vidrio translúcido. La franja de colores se mantiene. Ver activarBarra en src/revelar.ts. */
+.site-header { background: transparent; border-bottom-color: transparent; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none;
+  transition: background-color 220ms ease, border-color 220ms ease, box-shadow 220ms ease; }
+:root[data-bajando] .site-header { background: rgb(255 255 255 / 68%); border-bottom-color: rgb(255 255 255 / 60%); box-shadow: 0 0.5rem 2rem rgb(17 92 87 / 6%);
+  -webkit-backdrop-filter: blur(1.5rem) saturate(180%); backdrop-filter: blur(1.5rem) saturate(180%); }
+@supports not ((backdrop-filter: blur(1rem)) or (-webkit-backdrop-filter: blur(1rem))) { :root[data-bajando] .site-header { background: rgb(255 255 255 / 94%); } }
+@media (max-width: 56rem) {
+  /* Con el menú del celular abierto la barra necesita fondo para que el menú no quede flotando. */
+  .site-header:has(.main-nav.is-open) { background: rgb(255 255 255 / 92%); }
+}
+@media (max-width: 64rem) { .site-header .main-nav { background: #fff; -webkit-backdrop-filter: none; backdrop-filter: none; } }
