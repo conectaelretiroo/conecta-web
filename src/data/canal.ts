@@ -7,8 +7,11 @@ export const canal = {
   celular: "323 286 9963",
   whatsapp: "+57 323 286 9963",
   correo: "contacto@conectaelretiro.tv",
-  razonSocial: "[Razón social]",
-  nit: "[NIT]",
+  // Datos por definir: mientras estén vacíos no se muestran en la página.
+  razonSocial: "",
+  nit: "",
+  horario: "", // por ejemplo "Lunes a viernes 8:00 a. m. a 5:00 p. m."
+  desde: "", // año en que Conecta empezó a atender El Retiro, por ejemplo "1998"
   youtubeLive: "",
   redes: {
     facebook: "https://www.facebook.com/share/1H6q1Nzvwk/",

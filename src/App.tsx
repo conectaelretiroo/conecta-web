@@ -5,7 +5,7 @@ import { canal } from "./data/canal";
 import { diaDeHoy, dias, fechaDeHoy, parrillaSemanal, proximaEmision } from "./data/parrilla";
 import { canales, categorias } from "./data/canales";
 import { programas } from "./data/programas";
-import { fotosInicio } from "./data/inicio";
+import { fotosInicio, pasosInicio, preguntasInicio } from "./data/inicio";
 import { actualizarPQRS, ErrorPQRS, Estado, estados, EventoHistorial, listarPQRS, modoDemo, obtenerPQRS, radicarPQRS, Servicio, servicios, Solicitud } from "./services/pqrs";
 import { cerrarSesion, guardarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
 import { activarEnVivo, EnVivo, enlaceEmbebido, terminarEnVivo, useEnVivo } from "./services/envivo";
@@ -81,11 +81,11 @@ function Footer() {
     <footer className="footer" data-theme="dark">
       <div className="container footer-grid">
         <div className="footer-brand"><Logo inverse /><Text>Televisión local hecha con y para la comunidad de El Retiro.</Text></div>
-        <div><Text as="h3">Contacto</Text><Text>{canal.direccion}</Text><Text>{canal.telefono} · {canal.celular}</Text><Text>{canal.correo}</Text></div>
+        <div><Text as="h3">Contacto</Text><Text>{canal.direccion}</Text><Text>{canal.telefono} · {canal.celular}</Text><Text>{canal.correo}</Text>{canal.horario && <Text>{canal.horario}</Text>}</div>
         <div><Text as="h3">Atención al ciudadano</Text><AppLink href="/pqrs">Radicar PQRS</AppLink><AppLink href="/programacion">Programación</AppLink><AppLink href="/politica-de-datos">Política de datos</AppLink></div>
         <div><Text as="h3">Síguenos</Text><Redes /></div>
       </div>
-      <div className="container footer-bottom"><Text>© 2026 {canal.razonSocial} · NIT {canal.nit}</Text><AppLink href="/admin"><Icon name="lock" /> Ingreso del equipo</AppLink></div>
+      <div className="container footer-bottom"><Text>© 2026 {canal.razonSocial || canal.nombre}{canal.nit && ` · NIT ${canal.nit}`}</Text><AppLink href="/admin"><Icon name="lock" /> Ingreso del equipo</AppLink></div>
     </footer>
   );
 }
@@ -148,6 +148,7 @@ function Home() {
   // Inicio: las dos tarjetas de servicios (Internet y Televisión). El en vivo se anuncia con el botón
   // "Ver en vivo" del encabezado y el aviso pequeño de LiveNotice.
   return (
+    <>
     <section className="section home-services">
       <div className="container">
         <div className="home-head">
@@ -160,7 +161,7 @@ function Home() {
         <div className="service-cards">
           <article className="service-card service-card--internet">
             <div className="service-card__body">
-              <div className="service-card__top"><Text className="service-card__label">01 · Internet</Text></div>
+              <Text className="service-card__label">Internet</Text>
               <Text as="h2">Conecta tus ideas.<br />Conecta tu mundo.</Text>
               <Text>Navega, estudia, trabaja y comparte con una conexión pensada para tu hogar.</Text>
               <div className="button-row"><a href={whatsapp("Hola, quiero información sobre el servicio de internet de Conecta.")} target="_blank" rel="noopener noreferrer" className="button button--light">Quiero conectarme <Icon name="arrow" /></a></div>
@@ -170,7 +171,7 @@ function Home() {
           <article className="service-card service-card--tv">
             <ServicePhoto foto={fotosInicio.television} />
             <div className="service-card__body">
-              <div className="service-card__top"><Text className="service-card__label">02 · Televisión</Text></div>
+              <Text className="service-card__label">Televisión</Text>
               <Text as="h2">Conecta con historias.<br />Conecta con los tuyos.</Text>
               <Text>Noticias, deporte, entretenimiento y la señal local que nos identifica.</Text>
               <div className="button-row"><a href={whatsapp("Hola, quiero información sobre el servicio de televisión de Conecta.")} target="_blank" rel="noopener noreferrer" className="button button--secondary">Preguntar por televisión</a><AppLink href="/canales" className="button button--dark">Ver canales <Icon name="arrow" /></AppLink></div>
@@ -179,6 +180,33 @@ function Home() {
         </div>
       </div>
     </section>
+    <section className="section home-local">
+      <div className="container home-local__grid">
+        <div>
+          <Text as="h2">Somos de El Retiro y atendemos aquí mismo</Text>
+          <Text>Cuando necesitas ayuda hablas con gente del pueblo, en la oficina o por teléfono{canal.desde && `. Atendemos a El Retiro desde ${canal.desde}`}.</Text>
+        </div>
+        <dl className="home-local__datos">
+          <div><dt>Oficina</dt><dd>{canal.direccion}</dd></div>
+          <div><dt>Teléfonos</dt><dd><span>{canal.telefono}</span> · <span>{canal.celular}</span></dd></div>
+          {canal.horario && <div><dt>Horario</dt><dd>{canal.horario}</dd></div>}
+          <div><dt>WhatsApp</dt><dd><a href={whatsapp("Hola, quiero información sobre los servicios de Conecta.")} target="_blank" rel="noopener noreferrer" className="text-link">{canal.whatsapp} <Icon name="arrow" /></a></dd></div>
+        </dl>
+      </div>
+    </section>
+    <section className="section home-steps">
+      <div className="container">
+        <Text as="h2">Así te conectas</Text>
+        <ol className="steps">{pasosInicio.map((paso, i) => <li key={paso.titulo}><span className="steps__n" aria-hidden="true">{i + 1}</span><Text as="h3">{paso.titulo}</Text><Text>{paso.texto}</Text></li>)}</ol>
+      </div>
+    </section>
+    <section className="section home-faq">
+      <div className="container home-faq__grid">
+        <Text as="h2">Preguntas frecuentes</Text>
+        <div className="faq">{preguntasInicio.filter((item) => item.respuesta).map((item) => <details key={item.pregunta}><summary>{item.pregunta}</summary><Text>{item.respuesta}</Text></details>)}</div>
+      </div>
+    </section>
+    </>
   );
 }
 
@@ -452,7 +480,7 @@ function PqrsDetail({ token, radicado, onBack, onError }: { token: string; radic
 }
 
 function Policy() {
-  return <><PageIntro eyebrow="Documento legal" title="Política de tratamiento de datos" tone="green">Información sobre el uso responsable de los datos personales.</PageIntro><article className="section legal container"><Text as="h2">1. Responsable del tratamiento</Text><Text>{canal.razonSocial}, identificada con NIT {canal.nit}, con domicilio en {canal.direccion} y correo {canal.correo}, es responsable del tratamiento de datos personales.</Text><Text as="h2">2. Finalidades</Text><Text>Los datos se utilizan para gestionar solicitudes ciudadanas, responder comunicaciones y cumplir las obligaciones legales aplicables.</Text><Text as="h2">3. Derechos de los titulares</Text><Text>Conocer, actualizar, rectificar y solicitar la supresión de sus datos; presentar consultas o reclamos y revocar la autorización cuando proceda.</Text><Text as="h2">4. Consultas y reclamos</Text><Text>Las solicitudes relacionadas con datos personales se reciben en {canal.correo} o en {canal.direccion}, conforme a la Ley 1581 de 2012.</Text></article></>;
+  return <><PageIntro eyebrow="Documento legal" title="Política de tratamiento de datos" tone="green">Información sobre el uso responsable de los datos personales.</PageIntro><article className="section legal container"><Text as="h2">1. Responsable del tratamiento</Text><Text>{canal.razonSocial || "[Razón social]"}, identificada con NIT {canal.nit || "[NIT]"}, con domicilio en {canal.direccion} y correo {canal.correo}, es responsable del tratamiento de datos personales.</Text><Text as="h2">2. Finalidades</Text><Text>Los datos se utilizan para gestionar solicitudes ciudadanas, responder comunicaciones y cumplir las obligaciones legales aplicables.</Text><Text as="h2">3. Derechos de los titulares</Text><Text>Conocer, actualizar, rectificar y solicitar la supresión de sus datos; presentar consultas o reclamos y revocar la autorización cuando proceda.</Text><Text as="h2">4. Consultas y reclamos</Text><Text>Las solicitudes relacionadas con datos personales se reciben en {canal.correo} o en {canal.direccion}, conforme a la Ley 1581 de 2012.</Text></article></>;
 }
 
 function NotFound() {
