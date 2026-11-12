@@ -1,5 +1,6 @@
-// Fotos de las tarjetas de Inicio. Poner el archivo en public/inicio/ y escribir aquí su ruta
-// (por ejemplo "/inicio/internet.jpg") y el pie de foto. Con src vacío se ve un fondo de color.
+// Fotos de las tarjetas de Inicio: acompañan el texto dentro de la tarjeta (no van de fondo).
+// Poner el archivo en public/inicio/ y escribir aquí su ruta (por ejemplo "/inicio/internet.jpg").
+// "pie" describe la foto para quien no puede verla. Lo mejor es una foto horizontal (16:9), de 1200 px de ancho o más.
 export const fotosInicio = {
   internet: { src: "", pie: "Internet que acerca" },
   television: { src: "", pie: "Televisión para compartir" },

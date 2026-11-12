@@ -138,10 +138,14 @@ function ProgramCarousel() {
 const whatsapp = (mensaje: string) => `https://wa.me/${canal.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(mensaje)}`;
 
 /** Foto de una tarjeta de servicio. Sin foto todavía, queda un fondo de color con los aros de la marca. */
-function ServicePhoto({ foto }: { foto: { src: string; pie: string } }) {
+function ServicePhoto({ foto, nombre }: { foto: { src: string; pie: string }; nombre: string }) {
   const [falla, setFalla] = useState(false);
-  if (!foto.src || falla) return null; // sin foto no se muestra nada: el espacio aparece cuando se agregue la foto
-  return <figure className="service-photo"><img src={foto.src} alt="" loading="lazy" onError={() => setFalla(true)} /><figcaption>{foto.pie}</figcaption></figure>;
+  if (!foto.src || falla) {
+    // Sin foto: en la página real no se muestra nada; en la copia de pruebas se ve el espacio marcado.
+    if (location.hostname === "conectaelretiro.tv" || location.hostname === "www.conectaelretiro.tv") return null;
+    return <div className="service-photo service-photo--pendiente">Aquí va la foto de {nombre}</div>;
+  }
+  return <figure className="service-photo"><img src={foto.src} alt={foto.pie} loading="lazy" onError={() => setFalla(true)} /></figure>;
 }
 
 function Home() {
@@ -165,16 +169,16 @@ function Home() {
               <Text as="h2">Conecta tus ideas.<br />Conecta tu mundo.</Text>
               <Text>Navega, estudia, trabaja y comparte con una conexión pensada para tu hogar.</Text>
               <div className="button-row"><a href={whatsapp("Hola, quiero información sobre el servicio de internet de Conecta.")} target="_blank" rel="noopener noreferrer" className="button button--light">Quiero conectarme <Icon name="arrow" /></a></div>
+              <ServicePhoto foto={fotosInicio.internet} nombre="Internet" />
             </div>
-            <ServicePhoto foto={fotosInicio.internet} />
           </article>
           <article className="service-card service-card--tv">
-            <ServicePhoto foto={fotosInicio.television} />
             <div className="service-card__body">
               <Text className="service-card__label">Televisión</Text>
               <Text as="h2">Conecta con historias.<br />Conecta con los tuyos.</Text>
               <Text>Noticias, deporte, entretenimiento y la señal local que nos identifica.</Text>
               <div className="button-row"><a href={whatsapp("Hola, quiero información sobre el servicio de televisión de Conecta.")} target="_blank" rel="noopener noreferrer" className="button button--secondary">Preguntar por televisión</a><AppLink href="/canales" className="button button--dark">Ver canales <Icon name="arrow" /></AppLink></div>
+              <ServicePhoto foto={fotosInicio.television} nombre="Televisión" />
             </div>
           </article>
         </div>

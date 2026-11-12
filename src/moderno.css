@@ -218,3 +218,11 @@ body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-even
   .site-header:has(.main-nav.is-open) { background: rgb(255 255 255 / 92%); }
 }
 @media (max-width: 64rem) { .site-header .main-nav { background: #fff; -webkit-backdrop-filter: none; backdrop-filter: none; } }
+
+/* Foto de cada tarjeta de servicio: acompaña el texto dentro de la tarjeta, enmarcada y con esquinas redondas. */
+.service-card .button-row { margin-top: 0; padding-top: 2rem; }
+.service-photo { position: relative; z-index: 1; width: 100%; height: auto; aspect-ratio: 16 / 9; margin: 2rem 0 0; border-radius: 1.25rem; overflow: hidden; background: rgb(255 255 255 / 14%); box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 14%); }
+.service-photo::after { display: none; }
+.service-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.service-photo--pendiente { display: grid; place-items: center; padding: 1rem; text-align: center; font-size: 0.875rem; font-weight: 500; box-shadow: none; border: 0.09rem dashed currentColor; background: transparent; opacity: 0.6; }
+@media (max-width: 56rem) { .service-photo { height: auto; margin-top: 1.5rem; } }
