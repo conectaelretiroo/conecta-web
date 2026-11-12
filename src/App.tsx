@@ -8,7 +8,7 @@ import { programas } from "./data/programas";
 import { fotosInicio, pasosInicio, preguntasInicio } from "./data/inicio";
 import { actualizarPQRS, ErrorPQRS, Estado, estados, EventoHistorial, listarPQRS, modoDemo, obtenerPQRS, radicarPQRS, Servicio, servicios, Solicitud } from "./services/pqrs";
 import { cerrarSesion, guardarSesion, ingresoDemo, mostrarBotonGoogle, Sesion, sesionGuardada } from "./services/sesion";
-import { activarEnVivo, EnVivo, enlaceEmbebido, terminarEnVivo, useEnVivo } from "./services/envivo";
+import { activarEnVivo, EnVivo, enlaceEmbebido, esFacebook, terminarEnVivo, useEnVivo } from "./services/envivo";
 import { mostrarTurnstile, turnstileActivo } from "./services/turnstile";
 import { actualizarSeo } from "./seo";
 
@@ -91,7 +91,7 @@ function Footer() {
 }
 
 function LiveVideo({ envivo, large = false }: { envivo: NonNullable<EnVivo>; large?: boolean }) {
-  return <div className={`video-shell video-shell--player${large ? " video-shell--large" : ""}`}><iframe src={enlaceEmbebido(envivo.video)} title={envivo.titulo} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen /><span className="live-badge"><i /> En vivo</span></div>;
+  return <div className={`video-shell video-shell--player${large ? " video-shell--large" : ""}`}><iframe src={enlaceEmbebido(envivo)} title={envivo.titulo} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen /><span className="live-badge"><i /> En vivo</span></div>;
 }
 
 function ProgramVisual({ color, compact = false }: { color: string; compact?: boolean }) {
@@ -394,7 +394,7 @@ function Admin() {
   const text = query.trim().toLowerCase();
   const visible = items.filter((item) => (tab === "Todas" || (tab === "Abiertas") === isOpen(item)) && (serviceFilter === "Todos" || (item.servicio ?? "Canal") === serviceFilter) && (!text || [item.radicado, item.asunto, item.nombre, item.correo].some((field) => field.toLowerCase().includes(text))));
   const open = items.filter(isOpen).length;
-  const areas = { pqrs: ["Gestión de PQRS", "Revisa y gestiona las solicitudes de la ciudadanía."], envivo: ["Transmisión en vivo", "Muestra en la página un en vivo de YouTube y termínalo cuando quieras."] } as const;
+  const areas = { pqrs: ["Gestión de PQRS", "Revisa y gestiona las solicitudes de la ciudadanía."], envivo: ["Transmisión en vivo", "Muestra en la página un en vivo de YouTube o Facebook y termínalo cuando quieras."] } as const;
   return <><PageIntro eyebrow="Panel del equipo" title={areas[area][0]}>{areas[area][1]}</PageIntro><section className="section"><div className="container">
     <div className="admin-bar"><div className="admin-nav" role="tablist"><button role="tab" aria-selected={area === "pqrs"} className={area === "pqrs" ? "active" : ""} onClick={() => setArea("pqrs")}>PQRS {open > 0 && <span className="admin-count">{open}</span>}</button><button role="tab" aria-selected={area === "envivo"} className={area === "envivo" ? "active" : ""} onClick={() => setArea("envivo")}>Transmisión en vivo {envivo && <span className="admin-live"><i /> Al aire</span>}</button></div><div className="admin-session"><small>{session.correo}</small><Button variant="ghost" onClick={() => exit()}>Cerrar sesión</Button></div></div>
     {modoDemo && <p className="form-notice">Modo demostración: estos son datos de ejemplo.</p>}{error && <p className="form-error" role="alert">{error}</p>}
@@ -408,6 +408,7 @@ function Admin() {
 function LivePanel({ token, onError }: { token: string; onError: (e: unknown) => void }) {
   const envivo = useEnVivo();
   const [link, setLink] = useState("");
+  const [title, setTitle] = useState("");
   const [saving, setSaving] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [notice, setNotice] = useState("");
@@ -419,11 +420,13 @@ function LivePanel({ token, onError }: { token: string; onError: (e: unknown) =>
       onError(e);
     } finally { setSaving(false); setConfirming(false); }
   };
+  const facebook = esFacebook(link);
   const save = (event: FormEvent) => {
     event.preventDefault();
     void run(async () => {
-      const activo = await activarEnVivo(token, link.trim());
+      const activo = await activarEnVivo(token, link.trim(), facebook ? title : "");
       setLink("");
+      setTitle("");
       return activo ? `Listo: "${activo.titulo}" ya aparece en la página.` : "Guardado.";
     });
   };
@@ -432,14 +435,14 @@ function LivePanel({ token, onError }: { token: string; onError: (e: unknown) =>
     <div className="form-card">
       <div className="live-admin-heading"><Text as="h2">Estado</Text>{envivo ? <span className="status"><i /> Al aire</span> : <span className="state state--cerrada">Sin transmisión</span>}</div>
       {envivo ? <><LiveVideo envivo={envivo} /><Text><strong>{envivo.titulo}</strong></Text>
-        {confirming ? <div className="confirm-box" role="alert"><Text>¿Terminar la transmisión? La página dejará de mostrar el video, los botones "Ver en vivo" y la opción "En vivo" del menú.</Text><div className="button-row"><Button variant="danger" onClick={stop} disabled={saving}>{saving ? "Terminando…" : "Sí, terminar"}</Button><Button variant="ghost" onClick={() => setConfirming(false)} disabled={saving}>Cancelar</Button></div></div>
+        {confirming ? <div className="confirm-box" role="alert"><Text>¿Terminar la transmisión? La página dejará de mostrar el video, el botón "Ver en vivo" y el aviso.</Text><div className="button-row"><Button variant="danger" onClick={stop} disabled={saving}>{saving ? "Terminando…" : "Sí, terminar"}</Button><Button variant="ghost" onClick={() => setConfirming(false)} disabled={saving}>Cancelar</Button></div></div>
           : <Button variant="danger" className="live-stop" onClick={() => setConfirming(true)} disabled={saving}>Terminar transmisión</Button>}</>
         : <div className="video-shell live-empty"><Icon name="signal" /><Text>No hay transmisión activa</Text></div>}
       {notice && <p className="form-notice" role="status">{notice}</p>}
     </div>
     <aside className="help-column">
-      <form className="form-card" onSubmit={save}><Text as="h2">{envivo ? "Cambiar por otro en vivo" : "Activar un en vivo"}</Text><label className="field"><span>Enlace de YouTube</span><input type="url" required value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://youtube.com/live/…" /><small>Sirve el enlace del en vivo al aire o programado.</small></label><Button type="submit" disabled={saving}>{saving ? "Guardando…" : envivo ? "Cambiar" : "Activar"}</Button></form>
-      <article><Text as="h3">Cómo funciona</Text><Text>Al activarlo, Inicio muestra el video y aparecen los botones "Ver en vivo" y la opción "En vivo" del menú.</Text><Text>Cuando el en vivo termina en YouTube, todo se quita solo en uno o dos minutos. También puedes terminarlo aquí.</Text></article>
+      <form className="form-card" onSubmit={save}><Text as="h2">{envivo ? "Cambiar por otro en vivo" : "Activar un en vivo"}</Text><label className="field"><span>Enlace de YouTube o Facebook</span><input type="url" required value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://youtube.com/live/… o https://www.facebook.com/…/videos/…" /><small>Sirve el enlace del en vivo al aire (en YouTube, también uno programado).</small></label>{facebook && <label className="field"><span>Título (opcional)</span><input value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} placeholder="Transmisión en vivo de Conecta" /><small>Facebook no nos dice el nombre del en vivo; si lo dejas vacío sale "Transmisión en vivo de Conecta".</small></label>}<Button type="submit" disabled={saving}>{saving ? "Guardando…" : envivo ? "Cambiar" : "Activar"}</Button></form>
+      <article><Text as="h3">Cómo funciona</Text><Text>Al activarlo aparecen el botón "Ver en vivo" y el aviso "Estamos en vivo"; el video se ve en la página En vivo.</Text><Text>YouTube: cuando el en vivo termina, todo se quita solo en uno o dos minutos.</Text><Text>Facebook: no avisa cuándo termina, así que al acabar toca "Terminar transmisión" aquí. Si se olvida, se quita solo a las 8 horas.</Text></article>
     </aside>
   </div>;
 }

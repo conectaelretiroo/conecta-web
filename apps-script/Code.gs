@@ -12,6 +12,8 @@
  *                     traer la verificación "no soy un robot" del formulario.
  *   YOUTUBE_API_KEY   Llave de la API de datos de YouTube. Con ella el panel activa la
  *                     transmisión en vivo y la página la quita sola cuando termina.
+ *                     Los en vivo de Facebook no la necesitan: se terminan desde el panel
+ *                     (o se quitan solos a las HORAS_FACEBOOK horas).
  *
  * Las PQRS se guardan en una pestaña por servicio: PQRS Internet, PQRS Parabólica y PQRS Canal.
  * En la hoja, el menú PQRS → "Reporte entre fechas…" llena la pestaña Reporte con las tres juntas.
@@ -205,7 +207,7 @@ function doPost(e) {
         resultado = { envivo: enVivo_() };
         break;
       case 'envivo-guardar':
-        resultado = { envivo: guardarEnVivo_(verificar_(datos.token), datos.enlace) };
+        resultado = { envivo: guardarEnVivo_(verificar_(datos.token), datos.enlace, datos.titulo) };
         break;
       case 'envivo-quitar':
         verificar_(datos.token);
@@ -450,13 +452,21 @@ function actualizar_(usuario, cambios) {
   return solicitud;
 }
 
-// ---------- Transmisión en vivo (YouTube) ----------
+// ---------- Transmisión en vivo (YouTube o Facebook) ----------
 
 const PROPIEDAD_ENVIVO = 'ENVIVO';
 // La página pregunta cada minuto; YouTube se consulta como mucho una vez por minuto.
 const SEGUNDOS_ENVIVO = 60;
+// Facebook no avisa cuándo termina un en vivo (sin una app de Meta), así que el equipo lo
+// termina desde el panel. Si se les olvida, se quita solo pasadas estas horas.
+const HORAS_FACEBOOK = 8;
+const TITULO_FACEBOOK = 'Transmisión en vivo de Conecta';
 
-/** Lo que la página muestra: { video, titulo } mientras el en vivo esté al aire o programado; si no, null. */
+/**
+ * Lo que la página muestra mientras haya en vivo, si no null:
+ *   YouTube:  { fuente: 'youtube', video: <id de 11 caracteres>, titulo }
+ *   Facebook: { fuente: 'facebook', video: <enlace del video en facebook.com>, titulo }
+ */
 function enVivo_() {
   const cache = CacheService.getScriptCache();
   const enCache = cache.get('envivo');
@@ -465,13 +475,19 @@ function enVivo_() {
   const propiedades = PropertiesService.getScriptProperties();
   const guardado = JSON.parse(propiedades.getProperty(PROPIEDAD_ENVIVO) || 'null');
   let envivo = null;
-  if (guardado) {
+  if (guardado && guardado.fuente === 'facebook') {
+    if (Date.now() - (guardado.desde || 0) < HORAS_FACEBOOK * 3600 * 1000) {
+      envivo = { fuente: 'facebook', video: guardado.video, titulo: guardado.titulo };
+    } else {
+      propiedades.deleteProperty(PROPIEDAD_ENVIVO);
+    }
+  } else if (guardado) {
     const info = consultarYoutube_(guardado.video);
     if (!info) {
       // YouTube no respondió: se sigue mostrando lo último que se sabía.
-      envivo = { video: guardado.video, titulo: guardado.titulo };
+      envivo = { fuente: 'youtube', video: guardado.video, titulo: guardado.titulo };
     } else if (info.activo) {
-      envivo = { video: guardado.video, titulo: info.titulo };
+      envivo = { fuente: 'youtube', video: guardado.video, titulo: info.titulo };
     } else {
       // Terminó (o lo borraron): se quita solo.
       propiedades.deleteProperty(PROPIEDAD_ENVIVO);
@@ -481,10 +497,13 @@ function enVivo_() {
   return envivo;
 }
 
-/** El equipo pega el enlace del en vivo de YouTube desde el panel. */
-function guardarEnVivo_(usuario, enlace) {
-  const video = idYoutube_(enlace);
-  if (!video) throw new ErrorPublico('Pega el enlace del video en vivo de YouTube, por ejemplo https://youtube.com/live/…');
+/** El equipo pega el enlace del en vivo (YouTube o Facebook) desde el panel. */
+function guardarEnVivo_(usuario, enlace, titulo) {
+  const texto = String(enlace || '').trim();
+  if (/facebook\.com|fb\.watch|fb\.com/i.test(texto)) return guardarFacebook_(usuario, texto, titulo);
+
+  const video = idYoutube_(texto);
+  if (!video) throw new ErrorPublico('Pega el enlace del en vivo de YouTube (https://youtube.com/live/…) o de Facebook (https://www.facebook.com/…/videos/…).');
   if (!PropertiesService.getScriptProperties().getProperty('YOUTUBE_API_KEY')) {
     throw new ErrorPublico('Falta configurar YOUTUBE_API_KEY en el script.');
   }
@@ -493,11 +512,25 @@ function guardarEnVivo_(usuario, enlace) {
   if (!info.existe) throw new ErrorPublico('No encontramos ese video. Revisa que sea público u oculto, no privado.');
   if (!info.activo) throw new ErrorPublico('Ese video no es un en vivo al aire ni programado.');
 
+  return activarEnVivo_(usuario, { fuente: 'youtube', video: video, titulo: info.titulo });
+}
+
+function guardarFacebook_(usuario, enlace, titulo) {
+  const video = enlaceFacebook_(enlace);
+  if (!video) {
+    throw new ErrorPublico('Ese enlace de Facebook no es de un video. En Facebook abre el en vivo, toca ··· → Copiar enlace, y pégalo aquí (debe tener /videos/ o watch).');
+  }
+  const limpio = String(titulo || '').trim().slice(0, 120);
+  return activarEnVivo_(usuario, { fuente: 'facebook', video: video, titulo: limpio || TITULO_FACEBOOK });
+}
+
+function activarEnVivo_(usuario, envivo) {
   PropertiesService.getScriptProperties().setProperty(PROPIEDAD_ENVIVO, JSON.stringify({
-    video: video, titulo: info.titulo, activadoPor: usuario.correo, fecha: fecha_(new Date()),
+    fuente: envivo.fuente, video: envivo.video, titulo: envivo.titulo,
+    activadoPor: usuario.correo, fecha: fecha_(new Date()), desde: Date.now(),
   }));
   CacheService.getScriptCache().remove('envivo');
-  return { video: video, titulo: info.titulo };
+  return envivo;
 }
 
 /** El equipo termina la transmisión desde el panel antes de que YouTube la cierre. */
@@ -505,6 +538,36 @@ function quitarEnVivo_() {
   PropertiesService.getScriptProperties().deleteProperty(PROPIEDAD_ENVIVO);
   CacheService.getScriptCache().remove('envivo');
   return null;
+}
+
+/**
+ * Deja el enlace de un video de Facebook en una forma que acepta el reproductor de Facebook.
+ * Acepta facebook.com/<página>/videos/<número>, facebook.com/watch/?v=<número>,
+ * facebook.com/watch/live/?v=<número> y los enlaces cortos fb.watch/… y facebook.com/share/v/…
+ * (estos se siguen para encontrar el video). Devuelve '' si no es un video.
+ */
+function enlaceFacebook_(enlace) {
+  let texto = String(enlace || '').trim();
+  if (!/^https?:\/\//i.test(texto)) texto = 'https://' + texto;
+  for (let saltos = 0; saltos < 4; saltos++) {
+    const pagina = texto.match(/facebook\.com\/([\w.\-]+)\/videos\/(?:[^/?#]+\/)?(\d+)/i);
+    if (pagina) return 'https://www.facebook.com/' + pagina[1] + '/videos/' + pagina[2] + '/';
+    const ver = texto.match(/facebook\.com\/(?:watch\/(?:live\/)?|video\.php)\?(?:.*&)?v=(\d+)/i);
+    if (ver) return 'https://www.facebook.com/watch/?v=' + ver[1];
+    if (!/fb\.watch\/|facebook\.com\/share\/|fb\.com\//i.test(texto)) return '';
+    // Enlace corto: Facebook responde con una redirección al enlace largo.
+    let respuesta;
+    try {
+      respuesta = UrlFetchApp.fetch(texto, { followRedirects: false, muteHttpExceptions: true });
+    } catch (error) {
+      console.error('No se pudo abrir el enlace corto de Facebook: ' + error);
+      return '';
+    }
+    const destino = respuesta.getHeaders()['Location'] || respuesta.getHeaders()['location'];
+    if (!destino) return '';
+    texto = String(destino);
+  }
+  return '';
 }
 
 /** Acepta youtube.com/watch?v=, youtube.com/live/, youtu.be/ y el código de 11 caracteres. */
