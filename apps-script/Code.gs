@@ -12,8 +12,9 @@
  *                     traer la verificación "no soy un robot" del formulario.
  *   YOUTUBE_API_KEY   Llave de la API de datos de YouTube. Con ella el panel activa la
  *                     transmisión en vivo y la página la quita sola cuando termina.
- *                     Los en vivo de Facebook no la necesitan: se terminan desde el panel
- *                     (o se quitan solos a las HORAS_FACEBOOK horas).
+ *   FACEBOOK_TOKEN    Token de la página de Facebook del canal (de una app de Meta). Con él
+ *                     los en vivo de Facebook también se quitan solos cuando terminan. Sin él,
+ *                     se terminan desde el panel o se quitan solos a las HORAS_FACEBOOK horas.
  *
  * Las PQRS se guardan en una pestaña por servicio: PQRS Internet, PQRS Parabólica y PQRS Canal.
  * En la hoja, el menú PQRS → "Reporte entre fechas…" llena la pestaña Reporte con las tres juntas.
@@ -457,8 +458,8 @@ function actualizar_(usuario, cambios) {
 const PROPIEDAD_ENVIVO = 'ENVIVO';
 // La página pregunta cada minuto; YouTube se consulta como mucho una vez por minuto.
 const SEGUNDOS_ENVIVO = 60;
-// Facebook no avisa cuándo termina un en vivo (sin una app de Meta), así que el equipo lo
-// termina desde el panel. Si se les olvida, se quita solo pasadas estas horas.
+// Con FACEBOOK_TOKEN se le pregunta a Facebook si el en vivo sigue al aire (como con YouTube).
+// Sin token, o si el token deja de servir, se quita solo pasadas estas horas.
 const HORAS_FACEBOOK = 8;
 const TITULO_FACEBOOK = 'Transmisión en vivo de Conecta';
 
@@ -476,9 +477,12 @@ function enVivo_() {
   const guardado = JSON.parse(propiedades.getProperty(PROPIEDAD_ENVIVO) || 'null');
   let envivo = null;
   if (guardado && guardado.fuente === 'facebook') {
-    if (Date.now() - (guardado.desde || 0) < HORAS_FACEBOOK * 3600 * 1000) {
+    const vencido = Date.now() - (guardado.desde || 0) >= HORAS_FACEBOOK * 3600 * 1000;
+    const info = consultarFacebook_(guardado.video);
+    if (info ? info.activo : !vencido) {
       envivo = { fuente: 'facebook', video: guardado.video, titulo: guardado.titulo };
     } else {
+      // Terminó en Facebook (o, sin poder preguntar, ya pasaron las horas): se quita solo.
       propiedades.deleteProperty(PROPIEDAD_ENVIVO);
     }
   } else if (guardado) {
@@ -520,8 +524,11 @@ function guardarFacebook_(usuario, enlace, titulo) {
   if (!video) {
     throw new ErrorPublico('Ese enlace de Facebook no es de un video. En Facebook abre el en vivo, toca ··· → Copiar enlace, y pégalo aquí (debe tener /videos/ o watch).');
   }
+  const info = consultarFacebook_(video);
+  if (info && !info.existe) throw new ErrorPublico('Facebook no encuentra ese video, o no es de la página del canal.');
+  if (info && !info.activo) throw new ErrorPublico('Ese video de Facebook no está en vivo ahora.');
   const limpio = String(titulo || '').trim().slice(0, 120);
-  return activarEnVivo_(usuario, { fuente: 'facebook', video: video, titulo: limpio || TITULO_FACEBOOK });
+  return activarEnVivo_(usuario, { fuente: 'facebook', video: video, titulo: limpio || (info && info.titulo) || TITULO_FACEBOOK });
 }
 
 function activarEnVivo_(usuario, envivo) {
@@ -568,6 +575,38 @@ function enlaceFacebook_(enlace) {
     texto = String(destino);
   }
   return '';
+}
+
+/**
+ * { existe, activo, titulo } según Facebook, o null si no hay FACEBOOK_TOKEN o no se pudo consultar.
+ * live_status: LIVE = al aire; SCHEDULED_* = programado; LIVE_STOPPED o VOD = ya terminó.
+ */
+function consultarFacebook_(enlace) {
+  const token = PropertiesService.getScriptProperties().getProperty('FACEBOOK_TOKEN');
+  const numero = String(enlace).match(/(?:videos\/|v=)(\d+)/);
+  if (!token || !numero) return null;
+  const respuesta = UrlFetchApp.fetch(
+    'https://graph.facebook.com/v21.0/' + numero[1] + '?fields=live_status,title,description&access_token=' + encodeURIComponent(token),
+    { muteHttpExceptions: true },
+  );
+  const datos = JSON.parse(respuesta.getContentText() || '{}');
+  if (respuesta.getResponseCode() !== 200) {
+    // 100 = no existe o no es de esta página; lo demás (token vencido, Facebook caído) = no se sabe.
+    if (datos.error && datos.error.code === 100) return { existe: false, activo: false, titulo: '' };
+    console.error('Facebook respondió ' + respuesta.getResponseCode() + ': ' + respuesta.getContentText());
+    return null;
+  }
+  const estado = String(datos.live_status || '');
+  const titulo = String(datos.title || datos.description || '').split('\n')[0].slice(0, 120);
+  return { existe: true, activo: estado === 'LIVE' || estado.indexOf('SCHEDULED') === 0, titulo: titulo };
+}
+
+/** Prueba el token desde el editor: Ejecutar → probarFacebook. Debe mostrar el nombre de la página. */
+function probarFacebook() {
+  const token = PropertiesService.getScriptProperties().getProperty('FACEBOOK_TOKEN');
+  if (!token) throw new Error('Falta FACEBOOK_TOKEN en Propiedades del script.');
+  const respuesta = UrlFetchApp.fetch('https://graph.facebook.com/v21.0/me?fields=name&access_token=' + encodeURIComponent(token), { muteHttpExceptions: true });
+  console.log(respuesta.getContentText());
 }
 
 /** Acepta youtube.com/watch?v=, youtube.com/live/, youtu.be/ y el código de 11 caracteres. */
