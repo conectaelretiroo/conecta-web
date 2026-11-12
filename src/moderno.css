@@ -136,21 +136,21 @@ p { line-height: 1.5; }
 body { background: transparent; }
 body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-events: none;
   background:
-    radial-gradient(46rem 30rem at 12% 8%, color-mix(in srgb, var(--cyan) 30%, transparent), transparent 70%),
-    radial-gradient(40rem 28rem at 92% 14%, color-mix(in srgb, var(--green) 20%, transparent), transparent 70%),
-    radial-gradient(38rem 26rem at 84% 92%, color-mix(in srgb, var(--orange) 20%, transparent), transparent 70%),
-    radial-gradient(34rem 24rem at 6% 96%, color-mix(in srgb, var(--pink) 10%, transparent), transparent 70%),
+    radial-gradient(46rem 30rem at 12% 8%, color-mix(in srgb, var(--cyan) 46%, transparent), transparent 70%),
+    radial-gradient(40rem 28rem at 92% 14%, color-mix(in srgb, var(--green) 32%, transparent), transparent 70%),
+    radial-gradient(38rem 26rem at 84% 92%, color-mix(in srgb, var(--orange) 34%, transparent), transparent 70%),
+    radial-gradient(34rem 24rem at 6% 96%, color-mix(in srgb, var(--pink) 18%, transparent), transparent 70%),
     radial-gradient(50rem 30rem at 50% 50%, color-mix(in srgb, var(--teal) 6%, transparent), transparent 70%);
   animation: lucesFondo 900ms var(--ease-out) both; }
 @keyframes lucesFondo { from { opacity: 0; } to { opacity: 1; } }
 @media (max-width: 56rem) {
   body::before { background:
-    radial-gradient(24rem 20rem at 0% 6%, color-mix(in srgb, var(--cyan) 30%, transparent), transparent 70%),
-    radial-gradient(22rem 18rem at 100% 30%, color-mix(in srgb, var(--green) 18%, transparent), transparent 70%),
-    radial-gradient(22rem 18rem at 100% 96%, color-mix(in srgb, var(--orange) 20%, transparent), transparent 70%),
-    radial-gradient(20rem 16rem at 0% 80%, color-mix(in srgb, var(--pink) 9%, transparent), transparent 70%); }
+    radial-gradient(24rem 20rem at 0% 6%, color-mix(in srgb, var(--cyan) 44%, transparent), transparent 70%),
+    radial-gradient(22rem 18rem at 100% 30%, color-mix(in srgb, var(--green) 30%, transparent), transparent 70%),
+    radial-gradient(22rem 18rem at 100% 96%, color-mix(in srgb, var(--orange) 32%, transparent), transparent 70%),
+    radial-gradient(20rem 16rem at 0% 80%, color-mix(in srgb, var(--pink) 16%, transparent), transparent 70%); }
 }
-.site-header { background: color-mix(in srgb, var(--white) 80%, transparent); }
+.site-header { background: color-mix(in srgb, var(--white) 90%, transparent); }
 
 /* Animaciones al bajar (ver src/revelar.ts) */
 .reveal { opacity: 0; transform: translateY(1.25rem); transition: opacity 600ms var(--ease-out) var(--revelar-espera, 0ms), transform 600ms var(--ease-out) var(--revelar-espera, 0ms); }
@@ -160,8 +160,8 @@ body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-even
 /* Banners con efecto vidrio: translúcidos, con el fondo de luces difuminado detrás.
    Aplica al banner de Canales y Programas y al bloque "Somos de El Retiro" de Inicio. */
 .banner-card, .banner-card--gold, .home-local__grid {
-  background: rgb(255 255 255 / 52%);
-  -webkit-backdrop-filter: blur(1.5rem) saturate(170%); backdrop-filter: blur(1.5rem) saturate(170%);
+  background: rgb(255 255 255 / 34%);
+  -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%);
   border: 0.0625rem solid rgb(255 255 255 / 70%);
   box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 8%), inset 0 0.0625rem 0 rgb(255 255 255 / 80%);
 }
@@ -176,11 +176,11 @@ body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-even
 
 /* Vidrio suave en los bloques de Inicio: tarjetas de Internet y Televisión, bloque local y pasos. */
 .service-card { background: transparent; border: 0.0625rem solid rgb(255 255 255 / 55%); box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 7%); }
-.service-card--internet .service-card__body { background: color-mix(in srgb, var(--teal) 90%, transparent); -webkit-backdrop-filter: blur(1.25rem) saturate(160%); backdrop-filter: blur(1.25rem) saturate(160%); }
-.service-card--tv .service-card__body { background: color-mix(in srgb, var(--orange-soft) 68%, transparent); -webkit-backdrop-filter: blur(1.25rem) saturate(160%); backdrop-filter: blur(1.25rem) saturate(160%); }
+.service-card--internet .service-card__body { background: color-mix(in srgb, var(--teal) 80%, transparent); -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%); }
+.service-card--tv .service-card__body { background: color-mix(in srgb, var(--orange-soft) 42%, transparent); -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%); }
 .service-photo--empty { opacity: 0.8; }
-.home-local__grid { background: rgb(255 255 255 / 58%); }
-.steps li { background: rgb(255 255 255 / 58%); -webkit-backdrop-filter: blur(1.25rem) saturate(160%); backdrop-filter: blur(1.25rem) saturate(160%); border: 0.0625rem solid rgb(255 255 255 / 70%); box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 7%), inset 0 0.0625rem 0 rgb(255 255 255 / 80%); }
+.home-local__grid { background: rgb(255 255 255 / 36%); }
+.steps li { background: rgb(255 255 255 / 36%); -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%); border: 0.0625rem solid rgb(255 255 255 / 70%); box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 7%), inset 0 0.0625rem 0 rgb(255 255 255 / 80%); }
 @supports not ((backdrop-filter: blur(1rem)) or (-webkit-backdrop-filter: blur(1rem))) {
   .service-card--internet .service-card__body { background: var(--teal); }
   .service-card--tv .service-card__body { background: var(--orange-soft); }
