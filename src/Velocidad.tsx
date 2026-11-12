@@ -134,7 +134,6 @@ export function Velocidad() {
           <div><h2>Para un resultado real</h2><ul><li>Conecta el equipo por cable al módem o acércate al router.</li><li>Cierra descargas, videos y juegos en este y en otros aparatos de la casa.</li><li>Con wifi, la velocidad suele ser menor que la del plan: depende de la distancia y de las paredes.</li></ul></div>
           <div><h2>Qué significa cada dato</h2><ul><li><strong>Bajada:</strong> qué tan rápido recibes (ver videos, abrir páginas).</li><li><strong>Subida:</strong> qué tan rápido envías (videollamadas, subir fotos).</li><li><strong>Latencia:</strong> cuánto tarda en responder la conexión; entre menos, mejor.</li></ul></div>
         </div>
-        <p className="speed__legal">La prueba usa parte de tu plan de datos si estás en datos móviles. La medición se hace contra la red de Cloudflare, que recibe el resultado para sus estadísticas de calidad de internet.</p>
       </div>
     </section>
   );

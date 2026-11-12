@@ -61,7 +61,7 @@ function Header({ path }: { path: string }) {
   const [open, setOpen] = useState(false);
   const envivo = useEnVivo();
   // El botón "Ver en vivo" solo aparece mientras hay una transmisión activa; el menú no lleva "En vivo".
-  const items = [["Inicio", "/"], ["Canales", "/canales"], ["Programas", "/programas"], ["PQRS", "/pqrs"]];
+  const items = [["Inicio", "/"], ["Canales", "/canales"], ["Programas", "/programas"], ["Velocidad", "/velocidad"], ["PQRS", "/pqrs"]];
   return (
     <header className="site-header">
       <div className="container header-inner">

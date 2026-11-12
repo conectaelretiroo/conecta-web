@@ -257,7 +257,6 @@ body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-even
 .speed__notas { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin-top: 3.5rem; }
 .speed__notas h2 { font-size: 1.25rem; letter-spacing: -0.02em; }
 .speed__notas ul { margin: 1rem 0 0; padding-left: 1.1rem; display: grid; gap: 0.6rem; color: var(--secondary); line-height: 1.5; }
-.speed__legal { max-width: 46rem; margin: 3rem 0 0; font-size: 0.8125rem; color: var(--muted); }
 .service-card--internet .button--ghost { color: var(--white); text-decoration: underline; text-underline-offset: 0.25em; text-decoration-color: rgb(255 255 255 / 45%); }
 @media (max-width: 56rem) {
   .speed-page { padding-block: 2.5rem 4rem; }
