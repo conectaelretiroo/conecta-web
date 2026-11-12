@@ -30,6 +30,51 @@ const mbps = (bps?: number) => (!bps ? "—" : (bps / 1e6).toLocaleString("es-CO
 const ms = (valor?: number | null) => (!valor ? "—" : Math.round(valor).toLocaleString("es-CO"));
 const NOMBRE_FASE: Record<Fase, string> = { latency: "Midiendo la respuesta de la conexión…", download: "Midiendo la bajada…", upload: "Midiendo la subida…", "": "Preparando la prueba…" };
 
+// Reloj de aguja. La escala no es pareja (como en los medidores de velocidad): así se nota el movimiento
+// tanto en conexiones de 10 Mbps como en las de fibra.
+const MARCAS = [0, 5, 10, 25, 50, 100, 250, 500, 1000];
+const CX = 150, CY = 150, RADIO = 122, INICIO = 135, BARRIDO = 270;
+const fraccion = (valorMbps: number) => {
+  if (valorMbps <= 0) return 0;
+  for (let i = 1; i < MARCAS.length; i += 1) {
+    if (valorMbps <= MARCAS[i]) return (i - 1 + (valorMbps - MARCAS[i - 1]) / (MARCAS[i] - MARCAS[i - 1])) / (MARCAS.length - 1);
+  }
+  return 1;
+};
+const punto = (grados: number, radio: number) => {
+  const rad = (grados * Math.PI) / 180;
+  return [CX + radio * Math.cos(rad), CY + radio * Math.sin(rad)] as const;
+};
+const [X0, Y0] = punto(INICIO, RADIO);
+const [X1, Y1] = punto(INICIO + BARRIDO, RADIO);
+const ARCO = `M ${X0} ${Y0} A ${RADIO} ${RADIO} 0 1 1 ${X1} ${Y1}`;
+
+function Reloj({ valor, etiqueta, activo }: { valor?: number; etiqueta: string; activo: boolean }) {
+  const f = fraccion((valor ?? 0) / 1e6);
+  return (
+    <svg className={`gauge${activo ? " is-running" : ""}`} viewBox="0 0 300 272" role="img" aria-label={`${etiqueta}: ${valor ? mbps(valor) : "0"} megabits por segundo`}>
+      <defs>
+        <linearGradient id="gauge-color" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stopColor="var(--cyan)" /><stop offset="0.55" stopColor="var(--teal)" /><stop offset="1" stopColor="var(--green)" />
+        </linearGradient>
+      </defs>
+      <path className="gauge__track" d={ARCO} pathLength={100} />
+      <path className="gauge__fill" d={ARCO} pathLength={100} style={{ strokeDasharray: `${f * 100} 100` }} />
+      {MARCAS.map((marca, i) => {
+        const grados = INICIO + (BARRIDO * i) / (MARCAS.length - 1);
+        const [x, y] = punto(grados, RADIO - 30);
+        return <text key={marca} className="gauge__mark" x={x} y={y + 4} textAnchor="middle">{marca}</text>;
+      })}
+      <g className="gauge__needle" style={{ transform: `rotate(${INICIO + BARRIDO * f}deg)` }}>
+        <path d={`M ${CX - 6} ${CY} L ${CX + 76} ${CY - 2.2} L ${CX + 76} ${CY + 2.2} Z`} />
+      </g>
+      <circle className="gauge__hub" cx={CX} cy={CY} r="9" />
+      <text className="gauge__number" x={CX} y="240" textAnchor="middle">{valor ? mbps(valor) : "0"}</text>
+      <text className="gauge__unit" x={CX} y="262" textAnchor="middle">Mbps · {etiqueta}</text>
+    </svg>
+  );
+}
+
 export function Velocidad() {
   const [estado, setEstado] = useState<Estado>("lista");
   const [fase, setFase] = useState<Fase>("");
@@ -61,6 +106,7 @@ export function Velocidad() {
   };
 
   const midiendo = estado === "midiendo";
+  const enReloj = midiendo && fase === "upload" ? medidas.subida : medidas.bajada;
   return (
     <section className="section speed-page">
       <div className="container speed">
@@ -68,8 +114,7 @@ export function Velocidad() {
         <p className="speed__lead">Mide en unos segundos la velocidad de internet que le está llegando a este dispositivo.</p>
         <div className="speed__panel" aria-live="polite" aria-busy={midiendo}>
           <div className="speed__main">
-            <span className="speed__label">Bajada</span>
-            <p className="speed__number"><strong>{medidas.bajada ? mbps(medidas.bajada) : "0"}</strong> <span>Mbps</span></p>
+            <Reloj valor={enReloj} etiqueta={fase === "upload" && midiendo ? "Subida" : "Bajada"} activo={midiendo} />
             <p className={`speed__status${midiendo ? " is-running" : ""}`}>
               {estado === "lista" && "Presiona el botón para empezar."}
               {midiendo && NOMBRE_FASE[fase]}
@@ -79,6 +124,7 @@ export function Velocidad() {
             <button type="button" className="button button--primary" onClick={iniciar} disabled={midiendo}>{estado === "lista" ? "Iniciar prueba" : midiendo ? "Midiendo…" : "Repetir prueba"}</button>
           </div>
           <dl className="speed__datos">
+            <div><dt>Bajada</dt><dd><strong>{mbps(medidas.bajada)}</strong> Mbps</dd></div>
             <div><dt>Subida</dt><dd><strong>{mbps(medidas.subida)}</strong> Mbps</dd></div>
             <div><dt>Latencia</dt><dd><strong>{ms(medidas.latencia)}</strong> ms</dd></div>
             <div><dt>Variación</dt><dd><strong>{ms(medidas.variacion)}</strong> ms</dd></div>
