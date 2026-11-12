@@ -156,3 +156,20 @@ body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-even
 .reveal { opacity: 0; transform: translateY(1.25rem); transition: opacity 600ms var(--ease-out) var(--revelar-espera, 0ms), transform 600ms var(--ease-out) var(--revelar-espera, 0ms); }
 .reveal.is-visible { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { body::before { animation: none; } .reveal { opacity: 1; transform: none; } }
+
+/* Banners con efecto vidrio: translúcidos, con el fondo de luces difuminado detrás.
+   Aplica al banner de Canales y Programas y al bloque "Somos de El Retiro" de Inicio. */
+.banner-card, .banner-card--gold, .home-local__grid {
+  background: rgb(255 255 255 / 52%);
+  -webkit-backdrop-filter: blur(1.5rem) saturate(170%); backdrop-filter: blur(1.5rem) saturate(170%);
+  border: 0.0625rem solid rgb(255 255 255 / 70%);
+  box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 8%), inset 0 0.0625rem 0 rgb(255 255 255 / 80%);
+}
+.banner-main, .banner-card:not(.banner-card--gold) .banner-main { background: color-mix(in srgb, var(--teal) 94%, transparent); }
+.banner-card::before { opacity: 0.6; }
+.banner-text { background: rgb(255 255 255 / 55%); border: 0.0625rem solid rgb(255 255 255 / 70%); }
+.banner-tag, .banner-card--gold .banner-tag { background: rgb(255 255 255 / 60%); -webkit-backdrop-filter: blur(0.5rem); backdrop-filter: blur(0.5rem); border-color: rgb(255 255 255 / 80%); }
+/* Sin soporte de desenfoque, el banner queda casi opaco para que el texto se lea igual. */
+@supports not ((backdrop-filter: blur(1rem)) or (-webkit-backdrop-filter: blur(1rem))) {
+  .banner-card, .banner-card--gold, .home-local__grid { background: rgb(255 255 255 / 92%); }
+}
