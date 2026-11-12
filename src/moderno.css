@@ -160,7 +160,7 @@ body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-even
 /* Banners con efecto vidrio: translúcidos, con el fondo de luces difuminado detrás.
    Aplica al banner de Canales y Programas y al bloque "Somos de El Retiro" de Inicio. */
 .banner-card, .banner-card--gold, .home-local__grid {
-  background: rgb(255 255 255 / 34%);
+  background: rgb(255 255 255 / 44%);
   -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%);
   border: 0.0625rem solid rgb(255 255 255 / 70%);
   box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 8%), inset 0 0.0625rem 0 rgb(255 255 255 / 80%);
@@ -176,11 +176,11 @@ body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-even
 
 /* Vidrio suave en los bloques de Inicio: tarjetas de Internet y Televisión, bloque local y pasos. */
 .service-card { background: transparent; border: 0.0625rem solid rgb(255 255 255 / 55%); box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 7%); }
-.service-card--internet .service-card__body { background: color-mix(in srgb, var(--teal) 80%, transparent); -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%); }
-.service-card--tv .service-card__body { background: color-mix(in srgb, var(--orange-soft) 42%, transparent); -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%); }
+.service-card--internet .service-card__body { background: color-mix(in srgb, var(--teal) 85%, transparent); -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%); }
+.service-card--tv .service-card__body { background: color-mix(in srgb, var(--orange-soft) 54%, transparent); -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%); }
 .service-photo--empty { opacity: 0.8; }
-.home-local__grid { background: rgb(255 255 255 / 36%); }
-.steps li { background: rgb(255 255 255 / 36%); -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%); border: 0.0625rem solid rgb(255 255 255 / 70%); box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 7%), inset 0 0.0625rem 0 rgb(255 255 255 / 80%); }
+.home-local__grid { background: rgb(255 255 255 / 46%); }
+.steps li { background: rgb(255 255 255 / 46%); -webkit-backdrop-filter: blur(1.75rem) saturate(190%); backdrop-filter: blur(1.75rem) saturate(190%); border: 0.0625rem solid rgb(255 255 255 / 70%); box-shadow: 0 0.75rem 2.5rem rgb(17 92 87 / 7%), inset 0 0.0625rem 0 rgb(255 255 255 / 80%); }
 @supports not ((backdrop-filter: blur(1rem)) or (-webkit-backdrop-filter: blur(1rem))) {
   .service-card--internet .service-card__body { background: var(--teal); }
   .service-card--tv .service-card__body { background: var(--orange-soft); }
