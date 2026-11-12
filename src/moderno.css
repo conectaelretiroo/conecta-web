@@ -130,24 +130,29 @@ p { line-height: 1.5; }
 .section.pqrs-page { padding-top: 2.5rem; }
 @media (max-width: 56rem) { .section.pqrs-page { padding-top: 1.5rem; } }
 
-/* Fondo de luces suaves con los colores de Conecta, detrás del título de Inicio
-   y, más tenue, arriba de las demás páginas. Se desvanece hacia el gris del fondo. */
-body { background:
-  radial-gradient(60rem 26rem at 50% -8rem, color-mix(in srgb, var(--cyan) 16%, transparent), transparent 70%),
-  var(--page); background-repeat: no-repeat; }
-.home-services { position: relative; isolation: isolate; }
-.home-services::before { content: ""; position: absolute; z-index: -1; inset: -4rem 0 auto; height: 44rem; pointer-events: none;
+/* Fondo de toda la página: luces difuminadas con los colores de Conecta, fijas detrás del contenido
+   en todas las páginas. Al bajar, los bloques blancos pasan por encima y resaltan. */
+:root { background: var(--page); }
+body { background: transparent; }
+body::before { content: ""; position: fixed; z-index: -1; inset: 0; pointer-events: none;
   background:
-    radial-gradient(34rem 22rem at 22% 30%, color-mix(in srgb, var(--cyan) 34%, transparent), transparent 70%),
-    radial-gradient(30rem 20rem at 78% 22%, color-mix(in srgb, var(--green) 22%, transparent), transparent 70%),
-    radial-gradient(26rem 18rem at 62% 62%, color-mix(in srgb, var(--orange) 20%, transparent), transparent 70%),
-    radial-gradient(24rem 16rem at 36% 70%, color-mix(in srgb, var(--pink) 10%, transparent), transparent 70%);
-  -webkit-mask-image: linear-gradient(#000 55%, transparent); mask-image: linear-gradient(#000 55%, transparent);
-  animation: lucesInicio 900ms var(--ease-out) both; }
-@keyframes lucesInicio { from { opacity: 0; transform: scale(1.06); } to { opacity: 1; transform: none; } }
-@media (max-width: 56rem) { .home-services::before { height: 34rem; } }
+    radial-gradient(46rem 30rem at 12% 8%, color-mix(in srgb, var(--cyan) 30%, transparent), transparent 70%),
+    radial-gradient(40rem 28rem at 92% 14%, color-mix(in srgb, var(--green) 20%, transparent), transparent 70%),
+    radial-gradient(38rem 26rem at 84% 92%, color-mix(in srgb, var(--orange) 20%, transparent), transparent 70%),
+    radial-gradient(34rem 24rem at 6% 96%, color-mix(in srgb, var(--pink) 10%, transparent), transparent 70%),
+    radial-gradient(50rem 30rem at 50% 50%, color-mix(in srgb, var(--teal) 6%, transparent), transparent 70%);
+  animation: lucesFondo 900ms var(--ease-out) both; }
+@keyframes lucesFondo { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 56rem) {
+  body::before { background:
+    radial-gradient(24rem 20rem at 0% 6%, color-mix(in srgb, var(--cyan) 30%, transparent), transparent 70%),
+    radial-gradient(22rem 18rem at 100% 30%, color-mix(in srgb, var(--green) 18%, transparent), transparent 70%),
+    radial-gradient(22rem 18rem at 100% 96%, color-mix(in srgb, var(--orange) 20%, transparent), transparent 70%),
+    radial-gradient(20rem 16rem at 0% 80%, color-mix(in srgb, var(--pink) 9%, transparent), transparent 70%); }
+}
+.site-header { background: color-mix(in srgb, var(--white) 62%, transparent); }
 
 /* Animaciones al bajar (ver src/revelar.ts) */
 .reveal { opacity: 0; transform: translateY(1.25rem); transition: opacity 600ms var(--ease-out) var(--revelar-espera, 0ms), transform 600ms var(--ease-out) var(--revelar-espera, 0ms); }
 .reveal.is-visible { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) { .home-services::before { animation: none; } .reveal { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { body::before { animation: none; } .reveal { opacity: 1; transform: none; } }
