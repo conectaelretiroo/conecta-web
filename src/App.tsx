@@ -137,10 +137,6 @@ function ProgramCarousel() {
 
 const whatsapp = (mensaje: string) => `https://wa.me/${canal.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(mensaje)}`;
 
-function Dots() {
-  return <span className="color-dots" aria-hidden="true"><i /><i /><i /><i /></span>;
-}
-
 /** Foto de una tarjeta de servicio. Sin foto todavía, queda un fondo de color con los aros de la marca. */
 function ServicePhoto({ foto }: { foto: { src: string; pie: string } }) {
   const [falla, setFalla] = useState(false);
@@ -154,12 +150,17 @@ function Home() {
   return (
     <section className="section home-services">
       <div className="container">
-        <Eyebrow>Servicios para tu hogar</Eyebrow>
-        <Text as="h1" className="home-title">Conecta con lo que te mueve</Text>
+        <div className="home-head">
+          <div><Eyebrow>Servicios para tu hogar</Eyebrow><Text as="h1" className="home-title">Conecta con lo que te mueve</Text></div>
+          <div className="home-aside">
+            <Text>Internet y televisión para los hogares de El Retiro. Escríbenos y te contamos qué hay disponible en tu barrio o vereda.</Text>
+            <div className="button-row"><a href={whatsapp("Hola, quiero información sobre los servicios de Conecta.")} target="_blank" rel="noopener noreferrer" className="button button--primary">Escríbenos por WhatsApp <Icon name="arrow" /></a><AppLink href="/canales" className="button button--secondary">Ver canales</AppLink></div>
+          </div>
+        </div>
         <div className="service-cards">
           <article className="service-card service-card--internet">
             <div className="service-card__body">
-              <div className="service-card__top"><Text className="service-card__label">01 · Internet</Text><Dots /></div>
+              <div className="service-card__top"><Text className="service-card__label">01 · Internet</Text></div>
               <Text as="h2">Conecta tus ideas.<br />Conecta tu mundo.</Text>
               <Text>Navega, estudia, trabaja y comparte con una conexión pensada para tu hogar.</Text>
               <div className="button-row"><a href={whatsapp("Hola, quiero información sobre el servicio de internet de Conecta.")} target="_blank" rel="noopener noreferrer" className="button button--light">Quiero conectarme <Icon name="arrow" /></a></div>
@@ -169,7 +170,7 @@ function Home() {
           <article className="service-card service-card--tv">
             <ServicePhoto foto={fotosInicio.television} />
             <div className="service-card__body">
-              <div className="service-card__top"><Text className="service-card__label">02 · Televisión</Text><Dots /></div>
+              <div className="service-card__top"><Text className="service-card__label">02 · Televisión</Text></div>
               <Text as="h2">Conecta con historias.<br />Conecta con los tuyos.</Text>
               <Text>Noticias, deporte, entretenimiento y la señal local que nos identifica.</Text>
               <div className="button-row"><a href={whatsapp("Hola, quiero información sobre el servicio de televisión de Conecta.")} target="_blank" rel="noopener noreferrer" className="button button--secondary">Preguntar por televisión</a><AppLink href="/canales" className="button button--dark">Ver canales <Icon name="arrow" /></AppLink></div>
@@ -234,7 +235,7 @@ function Channels() {
 
 /** Encabezado corto de Canales y Programas: bloque verde con el título y una franja clara con el texto. */
 function PageBanner({ eyebrow, title, tag, tone = "teal", children }: { eyebrow: string; title: string; tag: string; tone?: "teal" | "gold"; children?: ReactNode }) {
-  return <section className="page-banner"><div className="container"><div className={`banner-card banner-card--${tone}`}><div className="banner-main"><Eyebrow>{eyebrow}</Eyebrow><Text as="h1">{title}</Text></div><div className="banner-side">{children && <Text className="banner-text">{children}</Text>}<span className="banner-lines" aria-hidden="true"><i /><i /><i /><i /></span><span className="banner-tag" aria-hidden="true">{tag}</span></div></div></div></section>;
+  return <section className="page-banner"><div className="container"><div className={`banner-card banner-card--${tone}`}><div className="banner-main"><Eyebrow>{eyebrow}</Eyebrow><Text as="h1">{title}</Text></div><div className="banner-side">{children && <Text className="banner-text">{children}</Text>}<span className="banner-tag" aria-hidden="true">{tag}</span></div></div></div></section>;
 }
 
 function PageIntro({ eyebrow, title, tone = "teal", children }: { eyebrow: string; title: string; tone?: "teal" | "cyan" | "orange" | "green"; children: ReactNode }) {
@@ -296,7 +297,7 @@ function Pqrs() {
       <div className="pqrs-head" data-theme="dark"><Text className="pqrs-kicker">Formulario paso a paso</Text><Text as="h1">Cuéntanos cómo podemos ayudarte</Text><Text>Completa la información con calma. Los campos marcados con * son obligatorios.</Text></div>
       <div className="pqrs-steps">
         {modoDemo && <p className="form-notice">Formulario en modo de prueba: las solicitudes todavía no se guardan.</p>}
-        <fieldset className="pqrs-step"><legend className="step-title"><span className="step-number">1</span>Elige el servicio <span className="step-badge">Obligatorio</span></legend><Text className="step-help">Selecciona el servicio relacionado con tu solicitud.</Text><div className="service-options">{servicios.map((item) => <button type="button" aria-pressed={service === item.valor} className={service === item.valor ? "active" : ""} onClick={() => { setService(item.valor); setError(""); }} key={item.valor}><strong>{item.titulo}</strong><span>{item.texto}</span></button>)}</div></fieldset>
+        <fieldset className="pqrs-step"><legend className="step-title"><span className="step-number">1</span>Elige el servicio *</legend><Text className="step-help">Selecciona el servicio relacionado con tu solicitud.</Text><div className="service-options">{servicios.map((item) => <button type="button" aria-pressed={service === item.valor} className={service === item.valor ? "active" : ""} onClick={() => { setService(item.valor); setError(""); }} key={item.valor}><strong>{item.titulo}</strong><span>{item.texto}</span></button>)}</div></fieldset>
         <fieldset className="pqrs-step"><legend className="step-title"><span className="step-number">2</span>Tipo de solicitud</legend><Text className="step-help">Elige la opción que mejor describe lo que necesitas.</Text><div className="chips chips--solid">{["Petición", "Queja", "Reclamo", "Sugerencia", "Felicitación"].map((item) => <button type="button" aria-pressed={type === item} className={type === item ? "active" : ""} onClick={() => setType(item)} key={item}>{item}</button>)}</div></fieldset>
         <fieldset className="pqrs-step"><legend className="step-title"><span className="step-number">3</span>Tus datos y solicitud</legend><Text className="step-help">Cuéntanos quién eres y explica lo sucedido con claridad.</Text><div className="pqrs-fields"><div className="field-grid"><Field label="Nombre completo" name="nombre" required maxLength={120} /><Field label="Correo electrónico" name="correo" type="email" required maxLength={254} help="Aquí te enviaremos la respuesta." /><Field label="Teléfono (opcional)" name="telefono" type="tel" maxLength={30} /><Field label="Barrio o vereda" name="ubicacion" required maxLength={120} /></div><Field label="Asunto" name="asunto" required maxLength={150} /><label className="field"><span>Descripción *</span><textarea name="descripcion" required maxLength={4800} value={description} onChange={(e) => setDescription(e.target.value)} /><small>{description.length} de 4.800 caracteres</small></label><label className="trap" aria-hidden="true">Sitio web<input name="sitio" tabIndex={-1} autoComplete="off" /></label><label className="checkbox"><input type="checkbox" name="autorizacion" required /><span>Autorizo el tratamiento de mis datos personales según la <AppLink href="/politica-de-datos">política de tratamiento de datos</AppLink>.</span></label>{turnstileActivo && <div ref={casilla} className="captcha" />}{error && <p className="form-error" role="alert">{error}</p>}<Button type="submit" disabled={sending}>{sending ? "Enviando…" : "Enviar solicitud"}</Button></div></fieldset>
       </div>

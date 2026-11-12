@@ -99,7 +99,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .main-nav > a.active::after { transform: scaleX(1); }
 .menu-button, .mobile-live { display: none; }
 
-.logo { display: inline-block; position: relative; width: 6.31rem; height: 2.25rem; overflow: hidden; flex: none; }
+.logo { display: inline-block; position: relative; width: 7.89rem; height: 2.81rem; overflow: hidden; flex: none; }
 .logo img { position: absolute; left: -8.025%; top: -11.255%; width: 111.883%; height: 148.918%; max-width: none; }
 .logo--inverse img { filter: brightness(0) invert(1); }
 .logo--compact { width: 9.11rem; height: 3.25rem; }
@@ -358,7 +358,7 @@ main > section:nth-child(2) { animation: sectionEnter 300ms 60ms var(--ease-out)
   .section, .page-intro { padding-block: 3rem; }
   .header-inner { min-height: 4rem; }
   .main-nav { top: 4rem; }
-  .site-header .logo { height: 1.75rem; width: 4.91rem; }
+  .site-header .logo { height: 2.19rem; width: 6.14rem; }
   .hero { padding-block: 3rem; }
   .hero::before { background: radial-gradient(circle at 10% 12%, rgb(80 187 205 / 15%), transparent 14rem); }
   .hero-grid { gap: 2.5rem; }
@@ -482,7 +482,6 @@ main > section:nth-child(2) { animation: sectionEnter 300ms 60ms var(--ease-out)
 /* PQRS: servicio de la solicitud (Internet, Televisión o Canal) */
 .service-options { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
 .service-options button { display: grid; gap: 0.25rem; padding: 1rem; text-align: left; color: var(--ink); background: var(--white); border: 0.0625rem solid var(--border); border-radius: var(--radius-m); cursor: pointer; transition: border-color 180ms ease, background 180ms ease; }
-.service-options button strong { font-size: 1rem; }
 .service-options button span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
 @media (hover: hover) and (pointer: fine) { .service-options button:hover { border-color: var(--teal); } }
 .service-options button.active { background: var(--teal-soft); border-color: var(--teal); box-shadow: inset 0 0 0 0.0625rem var(--teal); }
@@ -515,11 +514,6 @@ main > section:nth-child(2) { animation: sectionEnter 300ms 60ms var(--ease-out)
 @media (hover: hover) and (pointer: fine) { .button--light:hover { background: rgb(255 255 255 / 10%); border-color: var(--white); } }
 .button--dark { color: var(--white); background: var(--ink); }
 @media (hover: hover) and (pointer: fine) { .button--dark:hover { background: #000; } }
-.color-dots { display: inline-flex; gap: 0.4rem; }
-.color-dots i { width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--pink); }
-.color-dots i:nth-child(2) { background: var(--orange); }
-.color-dots i:nth-child(3) { background: var(--green); }
-.color-dots i:nth-child(4) { background: var(--cyan); }
 
 /* Inicio */
 .home-services { padding-block: 1.25rem 4rem; background: transparent; }
@@ -565,11 +559,6 @@ main > section:nth-child(2) { animation: sectionEnter 300ms 60ms var(--ease-out)
 .banner-main h1::after { content: ""; display: block; width: 3.25rem; height: 0.2rem; margin-top: 0.3rem; border-radius: 1rem; background: linear-gradient(90deg, var(--cyan), var(--orange) 60%, var(--pink)); }
 .banner-side { position: relative; display: flex; align-items: center; gap: 1rem; padding: 1rem 1.1rem 1rem 3rem; }
 .banner-text { flex: 1; margin: 0; padding: 0.75rem 1rem; font-size: 0.875rem; color: var(--secondary); background: rgb(255 255 255 / 85%); border: 0.0625rem solid var(--border); border-radius: var(--radius-s); }
-.banner-lines { position: absolute; right: 5.6rem; bottom: 0.9rem; display: grid; gap: 0.2rem; width: 2rem; }
-.banner-lines i { height: 0.14rem; border-radius: 1rem; background: var(--cyan); opacity: 0.75; }
-.banner-lines i:nth-child(2) { background: var(--green); }
-.banner-lines i:nth-child(3) { background: var(--orange); }
-.banner-lines i:nth-child(4) { background: var(--pink); opacity: 1; }
 .banner-tag { margin-left: auto; width: 3.6rem; height: 3.6rem; flex: none; display: grid; place-items: center; font-size: 0.55rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--teal); background: var(--cyan-soft); border: 0.0625rem solid color-mix(in srgb, var(--cyan) 30%, var(--border)); border-radius: 0.85rem; box-shadow: 0 0.5rem 1.25rem rgb(30 31 25 / 8%); transform: rotate(8deg); }
 .banner-card--gold .banner-tag { color: color-mix(in srgb, var(--orange) 70%, var(--ink)); background: var(--orange-soft); border-color: color-mix(in srgb, var(--orange) 30%, var(--border)); }
 .page-banner + .section { padding-top: 3rem; }
@@ -588,7 +577,6 @@ main > section:nth-child(2) { animation: sectionEnter 300ms 60ms var(--ease-out)
 .pqrs-step { position: relative; margin: 0; padding: 1.75rem 1.1rem 1.25rem; border: 0.0625rem solid var(--border); border-radius: var(--radius-m); background: var(--white); box-shadow: 0 0.35rem 1rem rgb(30 31 25 / 4%); }
 .step-title { position: absolute; top: -0.75rem; left: 1.1rem; display: flex; align-items: center; gap: 0.6rem; padding: 0; font-family: Poppins, sans-serif; font-size: 0.95rem; font-weight: 600; }
 .step-number { width: 1.6rem; height: 1.6rem; display: grid; place-items: center; color: var(--white); font-size: 0.8rem; border-radius: 0.45rem; background: var(--teal); box-shadow: 0 0.25rem 0.6rem rgb(17 92 87 / 25%); }
-.step-badge { padding: 0.1rem 0.45rem; font-family: Inter, sans-serif; font-size: 0.6rem; font-weight: 600; color: var(--teal); background: var(--teal-soft); border-radius: 1rem; }
 .step-help { margin: 0 0 1rem 2.2rem; font-size: 0.8rem; color: var(--secondary); }
 .pqrs-step:last-child .step-help { margin-left: 2.2rem; }
 .pqrs-step .service-options button { position: relative; padding-right: 2rem; }
@@ -628,7 +616,6 @@ main > section:nth-child(2) { animation: sectionEnter 300ms 60ms var(--ease-out)
   .banner-main { clip-path: none; padding: 1.1rem 1.25rem; }
   .banner-side { padding: 0.9rem 1rem; }
   .banner-side:not(:has(.banner-text)) { display: none; }
-  .banner-lines { display: none; }
   .banner-tag { width: 2.8rem; height: 2.8rem; }
   .pqrs-head { padding: 1.5rem 1.25rem 2rem; }
   .pqrs-steps { padding: 1rem 0.75rem 1.25rem; }
@@ -640,3 +627,25 @@ main > section:nth-child(2) { animation: sectionEnter 300ms 60ms var(--ease-out)
 /* Respuesta al presionar en opciones y flechas */
 .service-options button, .chips button, .tabs button { transition: border-color 180ms ease, background 180ms ease, color 180ms ease, transform 160ms var(--ease-out); }
 .service-options button:active, .chips button:active, .tabs button:active { transform: scale(0.98); }
+
+/* Orden de los adornos: cada uno en un solo lugar.
+   Puntos de colores: solo en el logo. Franja de colores: solo arriba (encabezado) y abajo (pie).
+   Aros: fondos grandes (pie, encabezados de página y espacios de foto). Etiqueta del banner: solo en el banner. */
+.program-showcase::before, .program-showcase::after,
+.program-showcase .container::before, .program-showcase .container::after,
+.program-visual::before, .program-visual::after,
+.service-card__body::after, .cta::before { display: none; }
+
+/* Inicio: título a la izquierda, frase y botones a la derecha */
+.home-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 26rem); gap: 1.5rem 3rem; align-items: end; margin-bottom: 1.75rem; }
+.home-head .home-title { margin-bottom: 0; }
+.home-aside > p { margin: 0; color: var(--secondary); }
+.home-aside .button-row { margin-top: 1.25rem; }
+@media (max-width: 56rem) {
+  .home-head { grid-template-columns: 1fr; gap: 0.75rem; }
+  .home-aside .button-row { display: none; }
+}
+
+/* PQRS: opciones con el mismo tamaño de letra que los nombres de los campos */
+.chips--solid button { font-size: 0.875rem; }
+.service-options button strong { font-size: 0.9375rem; }
