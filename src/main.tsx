@@ -4,6 +4,7 @@ import App from './App'
 import './index.css'
 import './moderno.css'
 import { quitarPantallaDeCarga } from './cargando'
+import { activarRevelado } from './revelar'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -12,3 +13,4 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 )
 
 quitarPantallaDeCarga()
+activarRevelado()
