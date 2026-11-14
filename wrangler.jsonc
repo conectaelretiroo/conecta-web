@@ -2,6 +2,8 @@
 {
   "name": "conecta-web",
   "compatibility_date": "2025-09-01",
+  // Interruptor de cierre temporal del sitio: ver worker/mantenimiento.js (CERRADO = true/false).
+  "main": "worker/mantenimiento.js",
   // Compila antes de publicar, aunque Cloudflare no tenga configurado un comando de compilación.
   "build": { "command": "npm run build" },
   // Dominio propio del canal. La dirección workers.dev sigue funcionando.
@@ -12,6 +14,9 @@
   ],
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
+    // Todas las visitas pasan primero por worker/mantenimiento.js.
+    "run_worker_first": true,
     // Cualquier ruta del sitio (/pqrs, /admin…) carga index.html y React decide qué mostrar.
     "not_found_handling": "single-page-application"
   },
